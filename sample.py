@@ -21,17 +21,6 @@ def defineBuildingGeometry(story,bay,WBays,HStory1,Hstorytyp,Element):
     )
     print(header,file=Element)
 
-def locationsOfBeams(NBay,Element):
-    beam1="""# calculate locations of beam-column joint centerlines:
-    set Pier1  0.0;		# leftmost column line"""
-    print(beam1,end="",file=Element)
-    for i in range(2,NBay+3):
-        beams="""set Pier{p}  [expr $Pier{leftp} + $WBay];""".format(
-            p=i, leftp=i-1 
-        )
-        print("\n   ",beams,end="",file=Element)
-    print(" # P-delta column line",file=Element)
-
 
 def nodalmasscreator(story,bay,Element):
     for floor in range(2,story+2):
@@ -59,3 +48,25 @@ def assignBoundaryCondidtions(bay,Element):
         else:
             boundarycondition="""fix {p}1 1 1 {d};""".format(p=pier,d=str(0))
             print (boundarycondition,file=Element)    
+
+def locationsOfColumns(NBay,Element):
+    column1="""# calculate locations of Beam-column joint centerlines:
+    set Pier1  0.0;		# leftmost column line"""
+    print(column1,end="",file=Element)
+    for i in range(2,NBay+3):
+        columns="""set Pier{p}  [expr $Pier{leftp} + $WBay];""".format(
+            p=i, leftp=i-1 
+        )
+        print("\n   ",columns,end="",file=Element)
+    print(" # P-delta column line",file=Element)
+
+def locationsOfBeams(NStory):
+    beam12="""
+    set Floor1 0.0;		# ground floor
+    set Floor2 [expr $Floor1 + $HStory1];"""
+    print("\t",beam12)
+    for i in range(3,NStory+2):
+        beams="set Floor{f} [expr $Floor{downf} + $HStoryTyp];".format(
+            f=i, downf=i-1 
+        )
+        print("   ",beams)
