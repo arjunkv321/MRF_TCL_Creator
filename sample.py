@@ -124,3 +124,16 @@ def plasticHingeOffset(NStory,Element):
             f1=i, f2=i+1
         )
         print("   ",phvert,file=Element)
+
+def defineNodes(NStory,NBays,Element):
+    header="""
+# define nodes and assign masses to beam-column intersections of frame
+    # command:  node nodeID xcoord ycoord -mass mass_dof1 mass_dof2 mass_dof3
+    # nodeID convention:  "xy" where x = Pier # and y = Floor # """
+    print(header,file=Element)
+    for i in range(1,NBays+3):
+        node = "node {b}1 $Pier{b} $Floor1;".format(b=i)
+        print("   ",node,file=Element)
+    for i in range(2,NStory+1):
+        node = "node 5{s} $Pier5 $Floor{s};".format(s=i)
+        print("   ",node,file=Element)
