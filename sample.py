@@ -75,3 +75,20 @@ def elementTrussPdelta(story,bay,Element):
     for floor in range(2,story+2):
         elementTruss="element truss  6{p1}{f} {p1}{f}05 {p2}{f} $Arigid $TrussMatID;	# Floor {f}".format(f=floor,p1=bay+1,p2=bay+2)
         print (elementTruss,file=Element)
+
+def panelZoneDimExt(NStory,extColDepth,Element):
+    header="""# calculate panel zone dimensions 
+    # lateral dist from CL of beam-col joint to edge of panel zone (= half the column depth), xy x=floor y=nextfloor, ext=external,int=internal"""
+    print(header,file=Element)
+    for i in range(2,NStory+1,2):
+        pzlat = "set pzlatext{f1}{f2}   [expr {d}/2.0];".format(
+            f1=i, f2=i+1, d=extColDepth[i//2-1]
+        )
+        print("   ",pzlat,file=Element)
+
+def panelZoneDimInt(NStory,intColDepth,Element):
+    for i in range(2,NStory+1,2):
+        pzlat = "set pzlatint{f1}{f2}   [expr {d}/2.0];".format(
+            f1=i, f2=i+1, d=intColDepth[i//2-1]
+        )
+        print("   ",pzlat,file=Element)
