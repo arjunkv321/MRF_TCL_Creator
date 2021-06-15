@@ -40,3 +40,14 @@ def nodalmasscreator(story,bay,Element):
             print(nodalmass,file=Element)
         print("",file=Element)
 
+def degreesOfFreedom(story,bay,Element):
+    for floor in range(2,story+2):
+            for pier in range(2,bay+3):
+                if pier<=bay+1:
+                    dof="equalDOF 1{f}05 {p}205 $dof1;		# Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
+                    print(dof,file=Element)
+                else:
+                    dof="equalDOF 1{f}05 {p}{f} $dof1;		        # Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
+                    print(dof,file=Element)
+            print("",file=Element)
+
