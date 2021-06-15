@@ -98,9 +98,9 @@ def panelZoneDimVert(NStory,beamDepth,Element):
         pzvert = "set pzvert{f1}{f2}   [expr {d}/2.0];".format(
             f1=i, f2=i+1, d=beamDepth[i//2-1]
         )
-        print("   ",pzvert)
+        print("   ",pzvert,file=Element)
 
-def plasticHingeOffsetExt(NStory,Element):
+def plasticHingeOffset(NStory,Element):
     header="""# calculate plastic hinge offsets from beam-column centerlines:
     # lateral dist from CL of beam-col joint to beam hinge, xy x=floor y=nextfloor, ext=external,int=internal"""
     print(header,file=Element)
@@ -109,15 +109,13 @@ def plasticHingeOffsetExt(NStory,Element):
             f1=i, f2=i+1
         )
         print("   ",phlat,file=Element)
-
-def plasticHingeOffsetInt(NStory,Element):
+    print("\n",end="")
     for i in range(2,NStory+1,2):
         phlat = "set phlatint{f1}{f2} [expr $pzlatent{f1}{f2}  + 7.5 + 22.5/2.0];".format(
             f1=i, f2=i+1
         )
         print("   ",phlat,file=Element)
 
-def plasticHingeOffsetVert(NStory,Element):
     header="""
 # vert dist from CL of beam-col joint to column hinge (forms at edge of panel zone)"""
     print(header,file=Element)
