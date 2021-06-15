@@ -33,8 +33,10 @@ def locationsOfBeams(NBay,Element):
     print(" # P-delta column line",file=Element)
 
 
-
-
-
-
+def nodalmasscreator(story,bay,Element):
+    for floor in range(2,story+2):
+        for pier in range(1,bay+1):
+            nodalmass="mass {p}{f}05 $NodalMass $Negligible $Negligible;	# Pier {p}, Floor {f}".format(p=pier,f=floor)
+            print(nodalmass,file=Element)
+        print("",file=Element)
 
