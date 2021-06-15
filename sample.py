@@ -51,3 +51,11 @@ def degreesOfFreedom(story,bay,Element):
                     print(dof,file=Element)
             print("",file=Element)
 
+def assignBoundaryCondidtions(bay,Element):
+    for pier in range(1,bay+3):
+        if pier<bay+2:
+            boundarycondition="""fix {p}1 1 1 {d};""".format(p=pier,d=str(1))
+            print (boundarycondition,file=Element)  
+        else:
+            boundarycondition="""fix {p}1 1 1 {d};""".format(p=pier,d=str(0))
+            print (boundarycondition,file=Element)    
