@@ -70,3 +70,8 @@ def locationsOfBeams(NStory):
             f=i, downf=i-1 
         )
         print("   ",beams)
+
+def elementTrussPdelta(story,bay,Element): 
+    for floor in range(2,story+2):
+        elementTruss="element truss  6{p1}{f} {p1}{f}05 {p2}{f} $Arigid $TrussMatID;	# Floor {f}".format(f=floor,p1=bay+1,p2=bay+2)
+        print (elementTruss,file=Element)
