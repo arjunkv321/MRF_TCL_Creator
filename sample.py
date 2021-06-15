@@ -21,6 +21,17 @@ def defineBuildingGeometry(story,bay,WBays,HStory1,Hstorytyp,Element):
     )
     print(header,file=Element)
 
+def locationsOfBeams(NBay,Element):
+    beam1="""# calculate locations of beam-column joint centerlines:
+    set Pier1  0.0;		# leftmost column line"""
+    print(beam1,end="",file=Element)
+    for i in range(2,NBay+3):
+        beams="""set Pier{p}  [expr $Pier{leftp} + $WBay];""".format(
+            p=i, leftp=i-1 
+        )
+        print("\n   ",beams,end="",file=Element)
+    print(" # P-delta column line",file=Element)
+
 
 
 
