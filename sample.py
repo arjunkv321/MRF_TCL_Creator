@@ -92,3 +92,10 @@ def panelZoneDimInt(NStory,intColDepth,Element):
             f1=i, f2=i+1, d=intColDepth[i//2-1]
         )
         print("   ",pzlat,file=Element)
+
+def panelZoneDimVert(NStory,beamDepth,Element):
+    for i in range(2,NStory+1,2):
+        pzvert = "set pzvert{f1}{f2}   [expr {d}/2.0];".format(
+            f1=i, f2=i+1, d=beamDepth[i//2-1]
+        )
+        print("   ",pzvert)
