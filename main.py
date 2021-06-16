@@ -1,4 +1,8 @@
 from sample import *
+import json
+
+f = open('Section.json')
+section = json.load(f)
 
 NStory = 8
 NBay = 3
@@ -8,9 +12,9 @@ HStoryTyp = 13.12
 extColDepth = [24.74,24.48,24.31,23.92] #exterior column depth, 2 successive colunms have same depth
 intColDepth = [25,25,24.48,23.92] #interior column depth, 2 successive colunms have same depth
 beamDepth = [26.92,24.31,23.92,17.99] #beam column depth, 2 successive colunms have same depth
-columnSectionExt = ["W24X146","W24X131","W24X94","W24X76"] # 2 succesive colunms have same section
-columnSectionInt = ["W24X162","W24X162","W24X131","W24X76"] # 2 succesive colunms have same section
-beamSection = ["W27X94","W24X94","W24X76","W18X50"] # 2 succesive floors  have same beam section
+columnSectionExt = ["W24x146","W24x131","W24x94","W24x76"] # 2 succesive colunms have same section
+columnSectionInt = ["W24x162","W24x162","W24x131","W24x76"] # 2 succesive colunms have same section
+beamSection = ["W27x94","W24x94","W24x76","W18x50"] # 2 succesive floors  have same beam section
 FloorWeight=586.25
 
 with open('test.tcl','w') as Element:
@@ -31,3 +35,4 @@ with open('test.tcl','a') as Element:
 	nodalmasscreator(NStory,NBay,Element)
 	degreesOfFreedom(NStory,NBay,Element)
 	assignBoundaryCondidtions(NBay,Element)
+	defineBeamColumnSection(8,columnSectionExt,columnSectionExt,beamSection,section,Element)

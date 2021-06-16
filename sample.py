@@ -447,3 +447,45 @@ def CalculateNodalMass(NBay,FloorWeight,Element):
 	set WBuilding  [expr $FloorWeight * $NStories]; # total building weight
 	set NodalMass [expr ($FloorWeight/$g) / ({float(NBay+1)})];	# mass at each node on Floors
 	set Negligible 1e-9;	# a very small number to avoid problems with zero""",file=Element)
+
+def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection,section,Element):
+    print("""
+###################################################################################################
+#          Define Section Properties and Elements													  
+###################################################################################################
+# define material properties
+	set Es 29000.0;			# steel Young's modulus
+	set Fy 50.0;			# steel yield strength
+    """,file=Element)
+    for i in range(1,NStory+1,2):
+        sec = columnSectionExt[i//2]
+        print(f"# define column section {sec} for Story {i}&{i+1} for external column",file=Element)
+        print(f"""	set Acol_ext{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
+	set Icol_ext{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
+	set Mycol_ext{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set dcol_ext{i}{i+1} {section[sec]["dcol"]};		# depth
+	set bfcol_ext{i}{i+1} {section[sec]["bfcol"]};		# flange width
+	set tfcol_ext{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
+	set twcol_ext{i}{i+1} {section[sec]["twcol"]};		# web thickness
+    """,file=Element)
+
+    for i in range(1,NStory+1,2):
+        sec = columnSectionInt[i//2]
+        print(f"# define column section {sec} for Story {i}&{i+1} for internal column",file=Element)
+        print(f"""	set Acol_int{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
+	set Icol_int{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
+	set Mycol_int{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set dcol_int{i}{i+1} {section[sec]["dcol"]};		# depth
+	set bfcol_int{i}{i+1} {section[sec]["bfcol"]};		# flange width
+	set tfcol_int{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
+	set twcol_int{i}{i+1} {section[sec]["twcol"]};		# web thickness
+    """,file=Element)
+
+    for i in range(2,NStory+2,2):
+        sec = beamSection[i//2-1]
+        print(f"# define beam section {sec} for Floor {i}&{i+1}",file=Element)
+        print(f"""    set Abeam_{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area (full section properties)
+	set Ibeam_{i}{i+2}  {section[sec]["Icol"]};	# moment of inertia  (full section properties)
+	set Mybeam_{i}{i+2} {section[sec]["Mybeam"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set dbeam_{i}{i+2} {section[sec]["dcol"]};		# depth
+    """,file=Element)
