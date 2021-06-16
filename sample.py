@@ -604,3 +604,41 @@ def DefineProps(Element):
 	set th_uN 0.4;			# ultimate rot capacity for neg loading
 	set DP 1.0;				# rate of cyclic deterioration for pos loading
 	set DN 1.0;				# rate of cyclic deterioration for neg loading""",file=Element)
+
+def beamSprings(story,bay,Element):
+    print("""   # define beam springs
+    # Spring ID: "4xya", where 4 = beam spring, x = Bay #, y = Floor #, a = location in bay
+    # "a" convention: 1 = left end, 2 = right end
+    # redefine the rotations since they are not the same
+    set th_pP 0.02;
+    set th_pN 0.02;
+    set th_pcP 0.16;
+    set th_pcN 0.16;""",file=Element)
+    springarray=[]
+    for floor in range(2,story+2):
+        if floor%2==0:
+            temp=floor
+        else:
+            temp=floor-1
+        print("""    set a_mem1 [expr ($n+1.0)*($Mybeam_{f1}{f2}*($McMy-1.0)) / ($Ks_beam_ext{f1}{f2}*$th_pP)];	# strain hardening ratio of spring
+    set b1 [expr ($a_mem1)/(1.0+$n*(1.0-$a_mem1))];								# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: there is mistake in Eqn B.5)
+    set a_mem2 [expr ($n+1.0)*($Mybeam_{f1}{f2}*($McMy-1.0)) / ($Ks_beam_int{f1}{f2}*$th_pP)];	# strain hardening ratio of spring
+    set b2 [expr ($a_mem2)/(1.0+$n*(1.0-$a_mem2))];								# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: there is mistake in Eqn B.5)""".format(f1=temp,f2=temp+1),file=Element)
+        print("",file=Element)
+        print("#beam springs at Floor {f}".format(f=floor),file=Element)
+        for pier in range(1,bay+1):
+            if pier==1 or pier==bay:
+                position="ext"
+            else:
+                position="int"
+            beamRotSpring="""    rotSpring2DModIKModel 4{p}{f}1 {p}{f}1 {p}{f}2 $Ks_beam_{pos}{f1}{f2} $b1 $b1 $Mybeam_{f1}{f2} [expr -$Mybeam_{f1}{f2}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;
+    rotSpring2DModIKModel 4{p}{f}2 {p1}{f}3 {p1}{f}4 $Ks_beam_{pos}{f1}{f2} $b1 $b1 $Mybeam_{f1}{f2} [expr -$Mybeam_{f1}{f2}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;""".format(p=pier,f=floor,f1=temp,f2=temp+1,pos=position,p1=pier+1)
+            springarray.append("4"+str(pier)+str(floor)+"1")
+            springarray.append("4"+str(pier)+str(floor)+"2")
+            print(beamRotSpring,file=Element)
+        print("",file=Element)
+    print("""    #create region for beam springs
+    region 2 -ele""",end=" ",file=Element)
+    for nodes in springarray:
+        print(nodes,end=" ",file=Element)
+    print(";",file=Element)
