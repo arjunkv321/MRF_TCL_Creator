@@ -1,7 +1,7 @@
 from sample import *
 
-Nstory = 8
-Nbays = 3
+NStory = 8
+NBay = 3
 WBay = 20
 HStory1 = 15.09
 HStoryTyp = 13.12
@@ -10,5 +10,5 @@ intColDepth = [25,25,24.48,23.92] #interior column depth, 2 successive colunms h
 beamDepth = [26.92,24.31,23.92,17.99] #beam column depth, 2 successive colunms have same depth
 
 with open('test.tcl','w') as Element:
-	elemPanelZone2DCreator(Nstory,Nbays,Element)
+	elemPanelZone2DCreator(NStory,NBay,Element)
     
