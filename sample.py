@@ -232,3 +232,34 @@ def Ks_beam(NStory,Nbays,Element):
                 f1=i, f2=i+1, b=j
             )
             print("   ",ksb,file=Element)
+
+def ColumnHingeNodes(story,bay):
+	vert=2
+	for story in range(1,story+1):
+		for dir in range(2):
+			if dir%2==0:
+				if story>1:
+					print("\n# column hinges at bottom of Story {s}".format(s=story))
+					for pier in range(1,bay+3):
+						if pier < bay+2:
+							print(("node {p}{f}7 $Pier{p} [expr $Floor{f} + $phvert{v1}{v2}];").format(p=pier,f=story,v1=vert,v2=vert+1))
+							print(("node {p}{f}8 $Pier{p} [expr $Floor{f} + $phvert{v1}{v2}];").format(p=pier,f=story,v1=vert,v2=vert+1))
+						else:
+							print(("node {p}{f}7 $Pier{p} $Floor{f};	# zero-stiffness spring will be used on p-delta column").format(p=pier,f=story))
+					if story%2==1:
+						print("\n# column hinges at mid of Story 3")
+						for pier in range(1,bay+2):
+							print(("	node {p}{s}0 $Pier1 [expr $Floor{s} + $phvert{v1}{v2} + 0.5*$HStoryTyp];	#xy0, x=pier y=floor").format(p=pier,s=story,v1=vert,v2=vert+1))
+						vert+=2
+				else:
+					print( "\n# column hinges at bottom of Story 1 (base)")
+					for pier in range(1,bay+2):
+						print((" node {p}17 $Pier{p} $Floor1;").format(p=pier))
+			else:
+				print("\n# column hinges at top of Story {s}".format(s=story))
+				for pier in range(1,bay+3):
+					if pier < bay+2:
+						print(("node {p}{f}5 $Pier{p} [expr $Floor{f} - $phvert{v1}{v2}];").format(p=pier,f=story+1,v1=vert,v2=vert+1))
+						print(("node {p}{f}6 $Pier{p} [expr $Floor{f} - $phvert{v1}{v2}];").format(p=pier,f=story+1,v1=vert,v2=vert+1))
+					else:
+						print(("node {p}{f}6 $Pier{p} $Floor{f};	# zero-stiffness spring will be used on p-delta column\n").format(p=pier,f=story+1,f2=story))
