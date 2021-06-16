@@ -1,10 +1,22 @@
 
 def elemPanelZone2DCreator(story,bay,Element):
+    header="""\n# define elastic panel zone elements (assume rigid)
+	# elemPanelZone2D creates 8 elastic elements that form a rectangular panel zone
+	# references provided in elemPanelZone2D.tcl
+	# note: the nodeID and eleID of the upper left corner of the PZ must be imported
+	# eleID convention:  500xya, 500 = panel zone element, x = Pier #, y = Floor #
+	# "a" convention: defined in elemPanelZone2D.tcl, but 1 = top left element
+	set Apz 1000.0;	# area of panel zone element (make much larger than A of frame elements)
+	set Ipz 1.0e5;  # moment of intertia of panel zone element (make much larger than I of frame elements)
+    # elemPanelZone2D eleID  nodeR E  A_PZ I_PZ transfTag"""
+    print(header,file=Element)
     for floor in range(2,story+2):
-        for pier in range(1,bay+1):
-            elemPanelZone2D="elemPanelZone2D   500{p}{f}1 {p}{f}01 $Es $Apz $Ipz $PDeltaTransf;	# Pier {p}, Floor {f}".format(p=pier,f=floor)
+        for pier in range(1,bay+2):
+            elemPanelZone2D="    elemPanelZone2D   500{p}{f}1 {p}{f}01 $Es $Apz $Ipz $PDeltaTransf;	# Pier {p}, Floor {f}".format(p=pier,f=floor)
             print(elemPanelZone2D,file=Element)
         print("",file=Element)
+    print("""# display the model with the node numbers
+	DisplayModel2D NodeNumbers;""",file=Element)
 
 def defineBuildingGeometry(story,bay,WBays,HStory1,Hstorytyp,Element):
     header="""###################################################################################################
@@ -79,9 +91,18 @@ def locationsOfBeams(NStory,Element):
         )
         print("   ",beams,file=Element)
 
-def elementTrussPdelta(story,bay,Element): 
+def elementTrussPdelta(story,bay,Element):
+    header="""# define p-delta columns and rigid links
+    set TrussMatID 600;		# define a material ID
+    set Arigid 1000.0;		# define area of truss section (make much larger than A of frame elements)
+    set Irigid 100000.0;	# moment of inertia for p-delta columns  (make much larger than I of frame elements)
+    uniaxialMaterial Elastic $TrussMatID $Es;		# define truss material
+    # rigid links
+    # command: element truss $eleID $iNode $jNode $A $materialID
+    # eleID convention:  6xy, 6 = truss link, x = Bay #, y = Floor #"""
+    print(header,file=Element) 
     for floor in range(2,story+2):
-        elementTruss="element truss  6{p1}{f} {p1}{f}05 {p2}{f} $Arigid $TrussMatID;	# Floor {f}".format(f=floor,p1=bay+1,p2=bay+2)
+        elementTruss="    element truss  6{p1}{f} {p1}{f}05 {p2}{f} $Arigid $TrussMatID;	# Floor {f}".format(f=floor,p1=bay+1,p2=bay+2)
         print (elementTruss,file=Element)
 
 def panelZoneDimExt(NStory,extColDepth,Element):
@@ -152,7 +173,8 @@ def defineColumnSprings(NStory,NBay,Element):
     SpringArray=[]
     mycol=1
     for NStory in range(1,NStory+1):
-        print("""\n set a_memext [expr ($n+1.0)*($Mycol_ext{cola}{colb}*($McMy-1.0)) / ($Ks_col_ext{s}*$th_pP)];	# strain hardening ratio of spring
+        print("""\n# compute strain hardening Story {s}
+    set a_memext [expr ($n+1.0)*($Mycol_ext{cola}{colb}*($McMy-1.0)) / ($Ks_col_ext{s}*$th_pP)];	# strain hardening ratio of spring
     set bext [expr ($a_memext)/(1.0+$n*(1.0-$a_memext))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)
     set a_memint [expr ($n+1.0)*($Mycol_int{cola}{colb}*($McMy-1.0)) / ($Ks_col_int{s}*$th_pP)];	# strain hardening ratio of spring
     set bint [expr ($a_memint)/(1.0+$n*(1.0-$a_memint))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)""".format(cola=mycol, colb=mycol+1,s=NStory),file=Element)
@@ -163,40 +185,40 @@ def defineColumnSprings(NStory,NBay,Element):
                     print("\n# col springs @ bottom of Story {s} (at base)".format(s=NStory),file=Element)
                     for pier in range(1,NBay+2):
                         if pier == 1 or pier == NBay+1:
-                            print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
                             SpringArray.append("3"+str(pier)+str(NStory)+"2")
                         else:
-                            print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
                             SpringArray.append("3"+str(pier)+str(NStory)+"2")
                     if NStory%2==1:
                         mycol+=2
                 else:
                     for pier in range(1,NBay+2):
                         if pier == 1 or pier == NBay+1:
-                            print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext"),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext"),file=Element)
                             SpringArray.append("3"+str(pier)+"11")
                         else:
-                            print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int"),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int"),file=Element)
                             SpringArray.append("3"+str(pier)+"11")
             else:
                 print("\n#col springs @ top of Story {s}".format(s=NStory),file=Element)
                 for pier in range(1,NBay+2):
                     if pier == 1 or pier == NBay+1:
-                        print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
+                        print("    rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
                         SpringArray.append("3"+str(pier)+str(NStory)+"2")
                     else:
-                        print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
+                        print("    rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
                         SpringArray.append("3"+str(pier)+str(NStory)+"2")
     print(""" # create region for frame column springs
     # command: region $regionID -ele $ele_1_ID $ele_2_ID...
     region 1 -ele""",end=" ",file=Element)
     for nodes in SpringArray:
 	    print(nodes,end=" ",file=Element)
-    print(";")
- 
-    
+    print(";",file=Element)
+
+
 def Ks_col(NStory,Element):
-    story1 = """# calculate modified rotational stiffness for plastic hinge springs: use length between springs //
+    story1 = """\n    # calculate modified rotational stiffness for plastic hinge springs: use length between springs //
     set Ks_col_ext1   [expr $n*6.0*$Es*$Icol_ext12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, external column springs 
     set Ks_col_int1   [expr $n*6.0*$Es*$Icol_int12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, internal column springs """
     print("   ",story1,file=Element)
@@ -215,7 +237,7 @@ def Ks_col(NStory,Element):
             print("   ",story,file=Element)
 
 def IcolIbeamMod(NStory,Element):
-    header="""    # determine stiffness modifications to equate the stiffness of the spring-elastic element-spring subassembly to the stiffness of the actual frame member
+    header="""# determine stiffness modifications to equate the stiffness of the spring-elastic element-spring subassembly to the stiffness of the actual frame member
     # References: (1) Ibarra, L. F., and Krawinkler, H. (2005). "Global collapse of frame structures under seismic excitations," Technical Report 152,
     #             		The John A. Blume Earthquake Engineering Research Center, Department of Civil Engineering, Stanford University, Stanford, CA.
     #			  (2) Zareian, F. and Medina, R. A. (2010). A practical method for proper modeling of structural damping in inelastic plane
@@ -244,11 +266,11 @@ def Ks_beam(NStory,Nbays,Element):
     header = "    #Ks_beam_y1y2z y1=floor y2floor z = bay"
     print(header,file=Element)
     for i in range(2,NStory+1,2):
-        for j in range(1,Nbays+1):
-            ksb="set Ks_beam_{f1}{f2}{b} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & Bay {b} beam springs".format(
-                f1=i, f2=i+1, b=j
-            )
-            print("   ",ksb,file=Element)
+        ksb="""set Ks_beam_int{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs of external column
+    set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
+            f1=i, f2=i+1
+        )
+        print("   ",ksb,file=Element)
 
 def ColumnHingeNodes(NStory,NBay,Element):
     print("""\n# define extra nodes for plastic hinge rotational springs
@@ -298,30 +320,54 @@ def elasticColumnElement(NStory,Nbay,Element):
         if i==1 :
             print(("    # Columns Story {s}".format(s=i)),file=Element)
             for j in range(1,Nbay+2):
-                elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}7 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
-                    p=j, s=i, s2=i+1, f=i-1
-                )
-                print(elem,file=Element)
+                if j==1 or j==Nbay+1:
+                    elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}7 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1, f=i-1
+                    )
+                    print(elem,file=Element)
+                else:
+                    elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}7 {p}{s2}5 $Acol_int{s}{s2} $Es $Icol_int{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1, f=i-1
+                    )
+                    print(elem,file=Element)
         elif i==1 or i>1 and i%2==0:
             print(("    # Columns Story {s}".format(s=i)),file=Element)
             for j in range(1,Nbay+2):
-                elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}8 {p}{s2}5 $Acol_ext{f}{s} $Es $Icol_ext{f}{s}mod $PDeltaTransf;	# Pier {p}".format(
-                    p=j, s=i, s2=i+1, f=i-1
-                )
-                print(elem,file=Element)
+                if j==1 or j==Nbay+1:
+                    elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}8 {p}{s2}5 $Acol_ext{f}{s} $Es $Icol_ext{f}{s}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1, f=i-1
+                    )
+                    print(elem,file=Element)
+                else:
+                    elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}8 {p}{s2}5 $Acol_int{f}{s} $Es $Icol_int{f}{s}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1, f=i-1
+                    )
+                    print(elem,file=Element)
         else:
             print(("    # Columns Story {s} below node splice // xyza x=column y=pier z=story a=1,2 1=down 2=up".format(s=i)),file=Element)
             for j in range(1,Nbay+2):
-                elem = "    element elasticBeamColumn  1{p}{s}1  {p}{s}8 {p}{s}0 $Acol_ext{f1}{f2} $Es $Icol_ext{f1}{f2}mod $PDeltaTransf;	# Pier {p}".format(
-                    p=j, s=i, f1=i-2, f2=i-1
-                )
-                print(elem,file=Element)
+                if j==1 or j==Nbay+1:
+                    elem = "    element elasticBeamColumn  1{p}{s}1  {p}{s}8 {p}{s}0 $Acol_ext{f1}{f2} $Es $Icol_ext{f1}{f2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, f1=i-2, f2=i-1
+                    )
+                    print(elem,file=Element)
+                else:
+                    elem = "    element elasticBeamColumn  1{p}{s}1  {p}{s}8 {p}{s}0 $Acol_int{f1}{f2} $Es $Icol_int{f1}{f2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, f1=i-2, f2=i-1
+                    )
+                    print(elem,file=Element)
             print(("    # Columns Story {s} above node splice // xyza x=column y=pier z=story a=1,2 1=down 2=up".format(s=i)),file=Element)
             for j in range(1,Nbay+2):
-                elem = "    element elasticBeamColumn  1{p}{s}2  {p}{s}0 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
-                    p=j, s=i, s2=i+1
-                )
-                print(elem,file=Element)
+                if j==1 or j==Nbay+1:
+                    elem = "    element elasticBeamColumn  1{p}{s}2  {p}{s}0 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1
+                    )
+                    print(elem,file=Element)
+                else:
+                    elem = "    element elasticBeamColumn  1{p}{s}2  {p}{s}0 {p}{s2}5 $Acol_int{s}{s2} $Es $Icol_int{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                        p=j, s=i, s2=i+1
+                    )
+                    print(elem,file=Element)
 
 
 def beamHingeNodes(story,bay,Element):
@@ -505,8 +551,8 @@ def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection
 	set dbeam_{i}{i+2} {section[sec]["dcol"]};		# depth
     """,file=Element)
 
-def elasticBeamColumnElements(story,bay):
-    print("""    # define elastic beam elements
+def elasticBeamColumnElements(story,bay,Element):
+    print("""\n# define elastic beam elements
     # element between plastic hinges: eleID convention = "2xy" where 2 = beam, x = Bay #, y = Floor #
     # element between plastic hinge and panel zone: eleID convention = "2xya" where 2 = beam, x = Bay #, y = Floor #, a = loc in bay
     #	"a" convention: 1 = left end of bay; 2 = right end of bay""",file=Element)
@@ -524,3 +570,39 @@ def elasticBeamColumnElements(story,bay):
     element elasticBeamColumn  2{p}{f}2 {p1}{f}4  {p1}{f}10 $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}    $PDeltaTransf;""".format(p=pier,f=floor,s=floor-1,p1=pier+1,f1=temp,f2=temp+1)
             print(elasticBeamElement,file=Element)
             print("",file=Element)
+
+def pdeltaElasticColumn(NStory,NBay,Element):
+    header="""\n# p-delta columns
+    #eleID convention:  7xy, 7 = p-delta columns, x = Pier #, y = Story #"""
+    print(header,file=Element)
+    print(f"    element elasticBeamColumn  7{NBay+2}1  {NBay+2}1	{NBay+2}26 $Arigid $Es $Irigid $PDeltaTransf;	# Story 1",file=Element)
+    for story in range(2,NStory+1):
+        print(f"    element elasticBeamColumn  7{NBay+2}{story}  {NBay+2}17	{NBay+2}26 $Arigid $Es $Irigid $PDeltaTransf;	# Story {story}",file=Element)
+
+def DefineProps(Element):
+    print("""\n###################################################################################################
+#          Define Rotational Springs for Plastic Hinges, Panel Zones, and Leaning Columns												  
+###################################################################################################
+# define rotational spring properties and create spring elements using "rotSpring2DModIKModel" procedure
+	# rotSpring2DModIKModel creates a uniaxial material spring with a bilinear response based on Modified Ibarra Krawinkler Deterioration Model
+	# references provided in rotSpring2DModIKModel.tcl
+	# input values for Story 1 column springs
+	set McMy 1.05;			# ratio of capping moment to yield moment, Mc / My
+	set LS 1000.0;			# basic strength deterioration (a very large # = no cyclic deterioration)
+	set LK 1000.0;			# unloading stiffness deterioration (a very large # = no cyclic deterioration)
+	set LA 1000.0;			# accelerated reloading stiffness deterioration (a very large # = no cyclic deterioration)
+	set LD 1000.0;			# post-capping strength deterioration (a very large # = no deterioration)
+	set cS 1.0;				# exponent for basic strength deterioration (c = 1.0 for no deterioration)
+	set cK 1.0;				# exponent for unloading stiffness deterioration (c = 1.0 for no deterioration)
+	set cA 1.0;				# exponent for accelerated reloading stiffness deterioration (c = 1.0 for no deterioration)
+	set cD 1.0;				# exponent for post-capping strength deterioration (c = 1.0 for no deterioration)
+	set th_pP 0.025;		# plastic rot capacity for pos loading
+	set th_pN 0.025;		# plastic rot capacity for neg loading
+	set th_pcP 0.3;			# post-capping rot capacity for pos loading
+	set th_pcN 0.3;			# post-capping rot capacity for neg loading
+	set ResP 0.4;			# residual strength ratio for pos loading
+	set ResN 0.4;			# residual strength ratio for neg loading
+	set th_uP 0.4;			# ultimate rot capacity for pos loading
+	set th_uN 0.4;			# ultimate rot capacity for neg loading
+	set DP 1.0;				# rate of cyclic deterioration for pos loading
+	set DN 1.0;				# rate of cyclic deterioration for neg loading""",file=Element)
