@@ -197,7 +197,7 @@ def Ks_col(NStory,Element):
         )
             print("   ",story,file=Element)
 
-def IcolMod(NStory,Element):
+def IcolIbeamMod(NStory,Element):
     header="""    # determine stiffness modifications to equate the stiffness of the spring-elastic element-spring subassembly to the stiffness of the actual frame member
     # References: (1) Ibarra, L. F., and Krawinkler, H. (2005). "Global collapse of frame structures under seismic excitations," Technical Report 152,
     #             		The John A. Blume Earthquake Engineering Research Center, Department of Civil Engineering, Stanford University, Stanford, CA.
@@ -208,9 +208,17 @@ def IcolMod(NStory,Element):
 
     # calculate modified moment of inertia for elastic elements between plastic hinge springs"""
     print(header,file=Element)
+    
     for i in range(1,NStory,2):
         Icol = """set Icol_ext{f1}{f2}mod  [expr $Icol_ext{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for external columns in Story {f1},{f2}
     set Icol_int{f1}{f2}mod  [expr $Icol_int{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for internal columns in Story {f1},{f2}""".format(
         f1=i, f2=i+1
         )
         print("   ",Icol,file=Element)
+    print("",file=Element)
+
+    for i in range(1,NStory,2):
+        Ibeam = "set Ibeam_{f1}{f2}mod [expr $Ibeam_{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for beams in Floor {f1}.{f2}".format(
+            f1=i+1, f2=i+2
+        )
+        print("   ",Ibeam,file=Element)
