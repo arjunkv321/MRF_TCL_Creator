@@ -177,3 +177,24 @@ def defineColumnSprings(story,bay,Element):
 					rotSpring2DModIKModel = "rotSpring2DModIKModel 3{p}{s}1 {p}{f}7 {p}{f}8 $Ks_col_{pos}{f} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(sd=floor+1, s=floor, p=str(pier), f=floor, pos="int", cola=mycol, colb=mycol+1)
 				print(rotSpring2DModIKModel)
 			print("")
+
+def Ks_col(NStory,Element):
+    story1 = """# calculate modified rotational stiffness for plastic hinge springs: use length between springs //
+    set Ks_col_ext1   [expr $n*6.0*$Es*$Icol_ext12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, external column springs 
+    set Ks_col_int1   [expr $n*6.0*$Es*$Icol_int12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, internal column springs """
+    print("   ",story1,file=Element)
+    for i in range(2,NStory+1):
+        if i%2==0:
+            story="""set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})];	# rotational stiffness of Story {s} external column springs
+    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})]; 	# rotational stiffness of Story {s} internal column springs""".format(
+            s=i, f1=i-1, f3= i+1
+        )
+            print("   ",story,file=Element)
+        else:
+            story="""set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})];	# rotational stiffness of Story {s} external column springs
+    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})]; 	# rotational stiffness of Story {s} internal column springs""".format(
+            s=i, f=i-1, f2=i+1, f3= i+2
+        )
+            print("   ",story,file=Element)
+
+            
