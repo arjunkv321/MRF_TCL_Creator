@@ -197,4 +197,20 @@ def Ks_col(NStory,Element):
         )
             print("   ",story,file=Element)
 
-            
+def IcolMod(NStory,Element):
+    header="""    # determine stiffness modifications to equate the stiffness of the spring-elastic element-spring subassembly to the stiffness of the actual frame member
+    # References: (1) Ibarra, L. F., and Krawinkler, H. (2005). "Global collapse of frame structures under seismic excitations," Technical Report 152,
+    #             		The John A. Blume Earthquake Engineering Research Center, Department of Civil Engineering, Stanford University, Stanford, CA.
+    #			  (2) Zareian, F. and Medina, R. A. (2010). A practical method for proper modeling of structural damping in inelastic plane
+    #					structural systems, Computers & Structures, Vol. 88, 1-2, pp. 45-53.
+    # calculate modified section properties to account for spring stiffness being in series with the elastic element stiffness
+    set n 10.0;		# stiffness multiplier for rotational spring
+
+    # calculate modified moment of inertia for elastic elements between plastic hinge springs"""
+    print(header,file=Element)
+    for i in range(1,NStory,2):
+        Icol = """set Icol_ext{f1}{f2}mod  [expr $Icol_ext{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for external columns in Story {f1},{f2}
+    set Icol_int{f1}{f2}mod  [expr $Icol_int{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for internal columns in Story {f1},{f2}""".format(
+        f1=i, f2=i+1
+        )
+        print("   ",Icol,file=Element)
