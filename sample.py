@@ -168,8 +168,6 @@ def defineNodes(NStory,NBays,Element):
         print("   ",node,file=Element)
 
 def defineColumnSprings(NStory,NBay,Element):
-    NBay=3
-    NStory=8
     SpringArray=[]
     mycol=1
     for NStory in range(1,NStory+1):
