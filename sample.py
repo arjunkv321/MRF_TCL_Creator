@@ -222,3 +222,13 @@ def IcolIbeamMod(NStory,Element):
             f1=i+1, f2=i+2
         )
         print("   ",Ibeam,file=Element)
+    
+def Ks_beam(NStory,Nbays,Element):
+    header = "    #Ks_beam_y1y2z y1=floor y2floor z = bay"
+    print(header,file=Element)
+    for i in range(2,NStory+1,2):
+        for j in range(1,Nbays+1):
+            ksb="set Ks_beam_{f1}{f2}{b} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & Bay {b} beam springs".format(
+                f1=i, f2=i+1, b=j
+            )
+            print("   ",ksb,file=Element)
