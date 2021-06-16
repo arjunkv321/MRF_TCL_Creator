@@ -295,3 +295,28 @@ def elasticColumnElement(NStory,Nbay,Element):
                     p=j, s=i, s2=i+1
                 )
                 print(elem,file=Element)
+
+
+def beamHingeNodes(story,bay,Element):
+    for floor in range(2,story+2):
+        if floor%2==0:
+            temp=floor
+        else:
+            temp=floor-1
+        for pier in range(1,bay+2):
+            if pier==1:
+                beamhingeNode="""    # beam hinges at Floor {f}
+    node {p}{f}1 [expr $Pier{p} + $phlatext{f1}{f2}] $Floor{f};
+    node {p}{f}2 [expr $Pier{p} + $phlatext{f1}{f2}] $Floor{f};""".format(f=floor,p=pier,f1=temp,f2=temp+1)
+                print(beamhingeNode,file=Element)
+            elif pier==bay+1:
+                beamhingeNode="""    node {p}{f}3 [expr $Pier{p} - $phlatext{f1}{f2}] $Floor{f};
+    node {p}{f}4 [expr $Pier{p} - $phlatext{f1}{f2}] $Floor{f};""".format(f=floor,p=pier,f1=temp,f2=temp+1)
+                print(beamhingeNode,file=Element)
+                print("",file=Element)                 
+            else:
+                beamhingeNode="""    node {p}{f}3 [expr $Pier{p} - $phlatint{f1}{f2}] $Floor{f};
+    node {p}{f}4 [expr $Pier{p} - $phlatint{f1}{f2}] $Floor{f};
+    node {p}{f}1 [expr $Pier{p} + $phlatint{f1}{f2}] $Floor{f};
+    node {p}{f}2 [expr $Pier{p} + $phlatint{f1}{f2}] $Floor{f};""".format(f=floor,p=pier,f1=temp,f2=temp+1)
+                print(beamhingeNode,file=Element)
