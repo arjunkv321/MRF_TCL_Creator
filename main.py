@@ -8,6 +8,9 @@ HStoryTyp = 13.12
 extColDepth = [24.74,24.48,24.31,23.92] #exterior column depth, 2 successive colunms have same depth
 intColDepth = [25,25,24.48,23.92] #interior column depth, 2 successive colunms have same depth
 beamDepth = [26.92,24.31,23.92,17.99] #beam column depth, 2 successive colunms have same depth
+columnSectionExt = ["W24X146","W24X131","W24X94","W24X76"] # 2 succesive colunms have same section
+columnSectionInt = ["W24X162","W24X162","W24X131","W24X76"] # 2 succesive colunms have same section
+beamSection = ["W27X94","W24X94","W24X76","W18X50"] # 2 succesive floors  have same beam section
 FloorWeight=586.25
 
 with open('test.tcl','w') as Element:
