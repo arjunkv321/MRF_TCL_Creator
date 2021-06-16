@@ -263,3 +263,41 @@ def ColumnHingeNodes(story,bay):
 						print(("node {p}{f}6 $Pier{p} [expr $Floor{f} - $phvert{v1}{v2}];").format(p=pier,f=story+1,v1=vert,v2=vert+1))
 					else:
 						print(("node {p}{f}6 $Pier{p} $Floor{f};	# zero-stiffness spring will be used on p-delta column\n").format(p=pier,f=story+1,f2=story))
+
+def elasticColumnElement(NStory,Nbay,Element):
+    header="""# set up geometric transformation of elements
+	set PDeltaTransf 1;
+	geomTransf PDelta $PDeltaTransf; 	# PDelta transformation
+
+# define elastic column elements using "element" command
+	# command: element elasticBeamColumn $eleID $iNode $jNode $A $E $I $transfID
+	# eleID convention:  "1xy" where 1 = col, x = Pier #, y = Story #"""
+    print(header,file=Element)
+    for i in range(1,NStory+1):
+        if i==1 :
+            print(("    # Columns Story {s}".format(s=i)),file=Element)
+            for j in range(1,Nbay+2):
+                elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}7 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                    p=j, s=i, s2=i+1, f=i-1
+                )
+                print(elem,file=Element)
+        elif i==1 or i>1 and i%2==0:
+            print(("    # Columns Story {s}".format(s=i)),file=Element)
+            for j in range(1,Nbay+2):
+                elem = "    element elasticBeamColumn  1{p}{s}  {p}{s}8 {p}{s2}5 $Acol_ext{f}{s} $Es $Icol_ext{f}{s}mod $PDeltaTransf;	# Pier {p}".format(
+                    p=j, s=i, s2=i+1, f=i-1
+                )
+                print(elem,file=Element)
+        else:
+            print(("    # Columns Story {s} below node splice // xyza x=column y=pier z=story a=1,2 1=down 2=up".format(s=i)),file=Element)
+            for j in range(1,Nbay+2):
+                elem = "    element elasticBeamColumn  1{p}{s}1  {p}{s}8 {p}{s}0 $Acol_ext{f1}{f2} $Es $Icol_ext{f1}{f2}mod $PDeltaTransf;	# Pier {p}".format(
+                    p=j, s=i, f1=i-2, f2=i-1
+                )
+                print(elem,file=Element)
+            print(("    # Columns Story {s} above node splice // xyza x=column y=pier z=story a=1,2 1=down 2=up".format(s=i)),file=Element)
+            for j in range(1,Nbay+2):
+                elem = "    element elasticBeamColumn  1{p}{s}2  {p}{s}0 {p}{s2}5 $Acol_ext{s}{s2} $Es $Icol_ext{s}{s2}mod $PDeltaTransf;	# Pier {p}".format(
+                    p=j, s=i, s2=i+1
+                )
+                print(elem,file=Element)
