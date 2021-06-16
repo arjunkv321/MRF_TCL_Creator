@@ -147,39 +147,54 @@ def defineNodes(NStory,NBays,Element):
         print("   ",node,file=Element)
 
 def defineColumnSprings(NStory,NBay,Element):
-	mycol=1
-	for NStory in range(1,NStory+1):
-		print("""\n set a_memext [expr ($n+1.0)*($Mycol_ext{cola}{colb}*($McMy-1.0)) / ($Ks_col_ext{s}*$th_pP)];	# strain hardening ratio of spring
-	set bext [expr ($a_memext)/(1.0+$n*(1.0-$a_memext))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)
-	set a_memint [expr ($n+1.0)*($Mycol_int{cola}{colb}*($McMy-1.0)) / ($Ks_col_int{s}*$th_pP)];	# strain hardening ratio of spring
-	set bint [expr ($a_memint)/(1.0+$n*(1.0-$a_memint))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)""".format(cola=mycol, colb=mycol+1,s=NStory),file=Element)
-		for dir in range(2):
-			if dir%2==0:
-				if NStory>1:
-					
-					print("\n# col springs @ bottom of Story {s} (at base)".format(s=NStory),file=Element)
-					for pier in range(1,NBay+2):
-						if pier == 1 or pier == NBay+1:
-							print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
-						else:
-							print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
-					if NStory%2==1:
-						mycol+=2
-				else:
-					for pier in range(1,NBay+2):
-						if pier == 1 or pier == NBay+1:
-							print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext"),file=Element)
-						else:
-							print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int"),file=Element)
-
-			else:
-				print("\n#col springs @ top of Story {s}".format(s=NStory),file=Element)
-				for pier in range(1,NBay+2):
-					if pier == 1 or pier == NBay+1:
-						print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
-					else:
-						print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
-
+    NBay=3
+    NStory=8
+    SpringArray=[]
+    mycol=1
+    for NStory in range(1,NStory+1):
+        print("""\n set a_memext [expr ($n+1.0)*($Mycol_ext{cola}{colb}*($McMy-1.0)) / ($Ks_col_ext{s}*$th_pP)];	# strain hardening ratio of spring
+    set bext [expr ($a_memext)/(1.0+$n*(1.0-$a_memext))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)
+    set a_memint [expr ($n+1.0)*($Mycol_int{cola}{colb}*($McMy-1.0)) / ($Ks_col_int{s}*$th_pP)];	# strain hardening ratio of spring
+    set bint [expr ($a_memint)/(1.0+$n*(1.0-$a_memint))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)""".format(cola=mycol, colb=mycol+1,s=NStory),file=Element)
+        for dir in range(2):
+            if dir%2==0:
+                if NStory>1:
+                    
+                    print("\n# col springs @ bottom of Story {s} (at base)".format(s=NStory),file=Element)
+                    for pier in range(1,NBay+2):
+                        if pier == 1 or pier == NBay+1:
+                            print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
+                            SpringArray.append("3"+str(pier)+str(NStory)+"2")
+                        else:
+                            print("rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
+                            SpringArray.append("3"+str(pier)+str(NStory)+"2")
+                    if NStory%2==1:
+                        mycol+=2
+                else:
+                    for pier in range(1,NBay+2):
+                        if pier == 1 or pier == NBay+1:
+                            print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext"),file=Element)
+                            SpringArray.append("3"+str(pier)+"11")
+                        else:
+                            print("rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int"),file=Element)
+                            SpringArray.append("3"+str(pier)+"11")
+            else:
+                print("\n#col springs @ top of Story {s}".format(s=NStory),file=Element)
+                for pier in range(1,NBay+2):
+                    if pier == 1 or pier == NBay+1:
+                        print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
+                        SpringArray.append("3"+str(pier)+str(NStory)+"2")
+                    else:
+                        print("rotSpring2DModIKModel 3{p}{s}2 {p}{f}6 {p}{f}5 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
+                        SpringArray.append("3"+str(pier)+str(NStory)+"2")
+    print(""" # create region for frame column springs
+    # command: region $regionID -ele $ele_1_ID $ele_2_ID...
+    region 1 -ele""",end=" ",file=Element)
+    for nodes in SpringArray:
+	    print(nodes,end=" ",file=Element)
+    print(";")
+ 
+    
 def Ks_col(NStory,Element):
     story1 = """# calculate modified rotational stiffness for plastic hinge springs: use length between springs //
     set Ks_col_ext1   [expr $n*6.0*$Es*$Icol_ext12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, external column springs 

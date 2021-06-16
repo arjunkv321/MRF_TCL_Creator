@@ -31,3 +31,4 @@ with open('test.tcl','a') as Element:
 	nodalmasscreator(NStory,NBay,Element)
 	degreesOfFreedom(NStory,NBay,Element)
 	assignBoundaryCondidtions(NBay,Element)
+	
