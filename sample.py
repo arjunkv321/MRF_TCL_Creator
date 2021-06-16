@@ -642,3 +642,24 @@ def beamSprings(story,bay,Element):
     for nodes in springarray:
         print(nodes,end=" ",file=Element)
     print(";",file=Element)
+
+def pDeltaSprings(story,bay,Element):
+    pDeltaar=[]
+    print("""    # define p-delta column spring: zero-stiffness elastic spring	
+    #Spring ID: "5xya" where 5 = leaning column spring, x = Pier #, y = Story #, a = location in story
+    # "a" convention: 1 = bottom of story, 2 = top of story
+    # rotLeaningCol ElemID ndR ndC """,file=Element)
+    print("    rotLeaningCol 5{p}12 {p}2 {p}26;	# top of Story 1".format(p=bay+2),file=Element)
+    pDeltaar.append("5"+str(bay+2)+"12")
+    for floor in range(2,story+1):
+        spring="""    rotLeaningCol 5{p}{f1}1 {p}{f1} {p}{f1}7;	# bottom of Story {f1}
+    rotLeaningCol 5{p}{f1}2 {p}{f2} {p}{f2}6;	# top of Story {f1}""".format(p=bay+2,f1=floor,f2=floor+1)
+        pDeltaar.append("5"+str(bay+2)+str(floor)+"1")
+        pDeltaar.append("5"+str(bay+2)+str(floor)+"2")
+        print(spring,file=Element)
+    print("",file=Element)
+    print("""    # create region for P-Delta column springs
+    region 3 -ele""",end=" ",file=Element)
+    for nodes in pDeltaar:
+            print(nodes,end=" ",file=Element)
+    print(";")
