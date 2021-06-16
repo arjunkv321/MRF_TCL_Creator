@@ -320,3 +320,55 @@ def beamHingeNodes(story,bay,Element):
     node {p}{f}1 [expr $Pier{p} + $phlatint{f1}{f2}] $Floor{f};
     node {p}{f}2 [expr $Pier{p} + $phlatint{f1}{f2}] $Floor{f};""".format(f=floor,p=pier,f1=temp,f2=temp+1)
                 print(beamhingeNode,file=Element)
+
+
+def panelZoneNodes(story,bay,Element):
+    header=""""# define extra nodes for panel zones
+    # nodeID convention:  "xybc" where x = Pier #, y = Floor #, bc = location relative to beam-column joint
+    # "bc" conventions: 01,02 = top left of joint; 
+    # 					03,04 = top right of joint;
+    # 					05    = middle right of joint; (vertical middle, horizontal right)
+    # 					06,07 = btm right of joint;
+    # 					08,09 = btm left of joint;
+    # 					10    = middle left of joint; (vertical middle, horizontal left)
+    # note: top center and btm center nodes were previously defined as xy7 and xy6, respectively, at Floor 2(center = horizonal center)"""
+    print(header,file=Element)
+    print("\n",file=Element)
+    
+
+
+
+    for floor in range(2,story+2):
+        if floor%2==0:
+            temp=floor
+        else:
+            temp=floor-1
+        for pier in range(1,bay+2):
+            if pier==1 or pier==bay+1:
+                panelzoneNode="""# panel zone at Pier {p}, Floor {f}
+    node {p}{f}01 [expr $Pier{p} - $pzlatext{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}02 [expr $Pier{p} - $pzlatext{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}03 [expr $Pier{p} + $pzlatext{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}04 [expr $Pier{p} + $pzlatext{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}05 [expr $Pier{p} + $pzlatext{f1}{f2} ] [expr $Floor{f}];
+    node {p}{f}06 [expr $Pier{p} + $pzlatext{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}07 [expr $Pier{p} + $pzlatext{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}08 [expr $Pier{p} - $pzlatext{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}09 [expr $Pier{p} - $pzlatext{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}10 [expr $Pier{p} - $pzlatext{f1}{f2} ] [expr $Floor{f}];""".format(f=floor,p=pier,f1=temp,f2=temp+1)
+                print(panelzoneNode,file=Element)
+                print("",file=Element)
+            else:
+                panelzoneNode="""# panel zone at Pier {p}, Floor {f}
+    node {p}{f}01 [expr $Pier{p} - $pzlatint{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}02 [expr $Pier{p} - $pzlatint{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}03 [expr $Pier{p} + $pzlatint{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}04 [expr $Pier{p} + $pzlatint{f1}{f2} ] [expr $Floor{f} + $phvert{f1}{f2}];
+    node {p}{f}05 [expr $Pier{p} + $pzlatint{f1}{f2} ] [expr $Floor{f}];
+    node {p}{f}06 [expr $Pier{p} + $pzlatint{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}07 [expr $Pier{p} + $pzlatint{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}08 [expr $Pier{p} - $pzlatint{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}09 [expr $Pier{p} - $pzlatint{f1}{f2} ] [expr $Floor{f} - $phvert{f1}{f2}];
+    node {p}{f}10 [expr $Pier{p} - $pzlatint{f1}{f2} ] [expr $Floor{f}];""".format(f=floor,p=pier,f1=temp,f2=temp+1)
+                print(panelzoneNode,file=Element)
+                print("",file=Element)
