@@ -504,3 +504,23 @@ def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection
 	set Mybeam_{i}{i+2} {section[sec]["Mybeam"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
 	set dbeam_{i}{i+2} {section[sec]["dcol"]};		# depth
     """,file=Element)
+
+def elasticBeamColumnElements(story,bay):
+    print("""    # define elastic beam elements
+    # element between plastic hinges: eleID convention = "2xy" where 2 = beam, x = Bay #, y = Floor #
+    # element between plastic hinge and panel zone: eleID convention = "2xya" where 2 = beam, x = Bay #, y = Floor #, a = loc in bay
+    #	"a" convention: 1 = left end of bay; 2 = right end of bay""",file=Element)
+    print("\n",file=Element)    
+
+    for floor in range(2,story+2):
+        if floor%2==0:
+            temp=floor
+        else:
+            temp=floor-1
+        print("    # Beams story{s} or floor {f}".format(f=floor,s=floor-1),file=Element)
+        for pier in range(1,bay+1):
+            elasticBeamElement="""    element elasticBeamColumn  2{p}{f}1 {p}{f}05 {p}{f}1  $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}    $PDeltaTransf;
+    elasticBeamColumn          2{p}{f}  {p}{f}2  {p1}{f}3  $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}mod $PDeltaTransf;
+    element elasticBeamColumn  2{p}{f}2 {p1}{f}4  {p1}{f}10 $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}    $PDeltaTransf;""".format(p=pier,f=floor,s=floor-1,p1=pier+1,f1=temp,f2=temp+1)
+            print(elasticBeamElement,file=Element)
+            print("",file=Element)
