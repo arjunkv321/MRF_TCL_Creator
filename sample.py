@@ -1,4 +1,7 @@
 
+from workspace import NBay
+
+
 def elemPanelZone2DCreator(story,bay,Element):
     header="""\n# define elastic panel zone elements (assume rigid)
 	# elemPanelZone2D creates 8 elastic elements that form a rectangular panel zone
@@ -106,7 +109,7 @@ def elementTrussPdelta(story,bay,Element):
         elementTruss="    element truss  6{p1}{f} {p1}{f}05 {p2}{f} $Arigid $TrussMatID;	# Floor {f}".format(f=floor,p1=bay+1,p2=bay+2)
         print (elementTruss,file=Element)
 
-def panelZoneDimExt(NStory,columnSectionExt,section,Element):
+def panelZoneDim(NStory,NBay,columnSectionExt,columnSectionInt,section,Element):
     header="""# calculate panel zone dimensions 
     # lateral dist from CL of beam-col joint to edge of panel zone (= half the column depth), xy x=floor y=nextfloor, ext=external,int=internal"""
     print(header,file=Element)
@@ -117,15 +120,14 @@ def panelZoneDimExt(NStory,columnSectionExt,section,Element):
         )
         print("   ",pzlat,file=Element)
     print("",file=Element)
-
-def panelZoneDimInt(NStory,columnSectionInt,section,Element):
-    for i in range(2,NStory+1,2):
-        sec = columnSectionInt[i//2-1]
-        pzlat = "set pzlatint{f1}{f2}   [expr {d}/2.0];".format(
-            f1=i, f2=i+1, d=section[sec]["dcol"]
-        )
-        print("   ",pzlat,file=Element)
-    print("",file=Element)
+    if NBay>1:
+        for i in range(2,NStory+1,2):
+            sec = columnSectionInt[i//2-1]
+            pzlat = "set pzlatint{f1}{f2}   [expr {d}/2.0];".format(
+                f1=i, f2=i+1, d=section[sec]["dcol"]
+            )
+            print("   ",pzlat,file=Element)
+        print("",file=Element)
 
 def panelZoneDimVert(NStory,beamSection,section,Element):
     for i in range(2,NStory+1,2):
@@ -181,8 +183,9 @@ def defineColumnSprings(NStory,NBay,Element):
     for NStory in range(1,NStory+1):
         print("""\n    # compute strain hardening Story {s}
     set a_memext [expr ($n+1.0)*($Mycol_ext{cola}{colb}*($McMy-1.0)) / ($Ks_col_ext{s}*$th_pP)];	# strain hardening ratio of spring
-    set bext [expr ($a_memext)/(1.0+$n*(1.0-$a_memext))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)
-    set a_memint [expr ($n+1.0)*($Mycol_int{cola}{colb}*($McMy-1.0)) / ($Ks_col_int{s}*$th_pP)];	# strain hardening ratio of spring
+    set bext [expr ($a_memext)/(1.0+$n*(1.0-$a_memext))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)""".format(cola=mycol, colb=mycol+1,s=NStory),file=Element)
+        if NBay>1:
+            print("""    set a_memint [expr ($n+1.0)*($Mycol_int{cola}{colb}*($McMy-1.0)) / ($Ks_col_int{s}*$th_pP)];	# strain hardening ratio of spring
     set bint [expr ($a_memint)/(1.0+$n*(1.0-$a_memint))];					# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: Eqn B.5 is incorrect)""".format(cola=mycol, colb=mycol+1,s=NStory),file=Element)
         for dir in range(2):
             if dir%2==0:
@@ -223,26 +226,23 @@ def defineColumnSprings(NStory,NBay,Element):
     print(";",file=Element)
 
 
-def Ks_col(NStory,Element):
-    story1 = """\n    # calculate modified rotational stiffness for plastic hinge springs: use length between springs //
-    set Ks_col_ext1   [expr $n*6.0*$Es*$Icol_ext12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, external column springs 
-    set Ks_col_int1   [expr $n*6.0*$Es*$Icol_int12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, internal column springs """
-    print("   ",story1,file=Element)
+def Ks_col(NStory,NBay,Element):
+    print("""\n    # calculate modified rotational stiffness for plastic hinge springs: use length between springs //
+    set Ks_col_ext1   [expr $n*6.0*$Es*$Icol_ext12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, external column springs """,file=Element)
+    if NBay>1:
+        print("    set Ks_col_int1   [expr $n*6.0*$Es*$Icol_int12mod/($HStory1-$phvert23)];		# rotational stiffness of Story 1, internal column springs ",file=Element)
+    
     for i in range(2,NStory+1):
         if i%2==0:
-            story="""set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})];	# rotational stiffness of Story {s} external column springs
-    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})]; 	# rotational stiffness of Story {s} internal column springs""".format(
-            s=i, f1=i-1, f3= i+1
-        )
-            print("   ",story,file=Element)
+            print("    set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})];	# rotational stiffness of Story {s} external column springs".format(s=i, f1=i-1, f3= i+1),file=Element)
+            if NBay>1:
+                print("    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{f1}{s}mod/($HStoryTyp-$phvert{s}{f3}-$phvert{s}{f3})]; 	# rotational stiffness of Story {s} internal column springs".format(s=i, f1=i-1, f3= i+1),file=Element)   
         else:
-            story="""set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})];	# rotational stiffness of Story {s} external column springs
-    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})]; 	# rotational stiffness of Story {s} internal column springs""".format(
-            s=i, f=i-1, f2=i+1, f3= i+2
-        )
-            print("   ",story,file=Element)
+            print("    set Ks_col_ext{s}   [expr $n*6.0*$Es*$Icol_ext{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})];	# rotational stiffness of Story {s} external column springs".format(s=i, f=i-1, f2=i+1, f3= i+2),file=Element)
+            if NBay>1:
+                print("    set Ks_col_int{s}   [expr $n*6.0*$Es*$Icol_int{s}{f2}mod/($HStoryTyp-$phvert{f}{s}-$phvert{f2}{f3})]; 	# rotational stiffness of Story {s} internal column springs".format(s=i, f=i-1, f2=i+1, f3= i+2),file=Element)
 
-def IcolIbeamMod(NStory,Element):
+def IcolIbeamMod(NStory,NBay,Element):
     header="""# determine stiffness modifications to equate the stiffness of the spring-elastic element-spring subassembly to the stiffness of the actual frame member
     # References: (1) Ibarra, L. F., and Krawinkler, H. (2005). "Global collapse of frame structures under seismic excitations," Technical Report 152,
     #             		The John A. Blume Earthquake Engineering Research Center, Department of Civil Engineering, Stanford University, Stanford, CA.
@@ -255,11 +255,10 @@ def IcolIbeamMod(NStory,Element):
     print(header,file=Element)
     
     for i in range(1,NStory,2):
-        Icol = """set Icol_ext{f1}{f2}mod  [expr $Icol_ext{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for external columns in Story {f1},{f2}
-    set Icol_int{f1}{f2}mod  [expr $Icol_int{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for internal columns in Story {f1},{f2}""".format(
-        f1=i, f2=i+1
-        )
-        print("   ",Icol,file=Element)
+        print("    set Icol_ext{f1}{f2}mod  [expr $Icol_ext{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for external columns in Story {f1},{f2}".format(f1=i, f2=i+1),file=Element)
+        if NBay>1:
+            print("    set Icol_int{f1}{f2}mod  [expr $Icol_int{f1}{f2}*($n+1.0)/$n];	# modified moment of inertia for internal columns in Story {f1},{f2}".format(f1=i, f2=i+1),file=Element)
+        
     print("",file=Element)
 
     for i in range(1,NStory,2):
@@ -271,12 +270,19 @@ def IcolIbeamMod(NStory,Element):
 def Ks_beam(NStory,Nbays,Element):
     header = "    #Ks_beam_y1y2z y1=floor y2floor z = bay"
     print(header,file=Element)
-    for i in range(2,NStory+1,2):
-        ksb="""set Ks_beam_int{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs of external column
-    set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
-            f1=i, f2=i+1
-        )
-        print("   ",ksb,file=Element)
+    if Nbays>1:
+        for i in range(2,NStory+1,2):
+            ksb="""set Ks_beam_int{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs of external column
+        set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
+                f1=i, f2=i+1
+            )
+            print("   ",ksb,file=Element)
+    else:
+        for i in range(2,NStory+1,2):
+            ksb="set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatext{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
+                f1=i, f2=i+1
+            )
+            print("   ",ksb,file=Element)        
 
 def ColumnHingeNodes(NStory,NBay,Element):
     print("""\n# define extra nodes for plastic hinge rotational springs
@@ -515,7 +521,7 @@ def CalculateNodalMass(NBay,FloorWeight,Element):
 	set NodalMass [expr ($FloorWeight/$g) / ({float(NBay+1)})];	# mass at each node on Floors
 	set Negligible 1e-9;	# a very small number to avoid problems with zero""",file=Element)
 
-def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection,section,Element):
+def defineBeamColumnSection(NStory,NBay,columnSectionExt,columnSectionInt,beamSection,section,Element):
     print("""
 ###################################################################################################
 #          Define Section Properties and Elements													  
@@ -536,17 +542,18 @@ def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection
 	set twcol_ext{i}{i+1} {section[sec]["twcol"]};		# web thickness
     """,file=Element)
 
-    for i in range(1,NStory+1,2):
-        sec = columnSectionInt[i//2]
-        print(f"# define column section {sec} for Story {i}&{i+1} for internal column",file=Element)
-        print(f"""	set Acol_int{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
-	set Icol_int{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
-	set Mycol_int{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
-	set dcol_int{i}{i+1} {section[sec]["dcol"]};		# depth
-	set bfcol_int{i}{i+1} {section[sec]["bfcol"]};		# flange width
-	set tfcol_int{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
-	set twcol_int{i}{i+1} {section[sec]["twcol"]};		# web thickness
-    """,file=Element)
+    if NBay>1:
+        for i in range(1,NStory+1,2):
+            sec = columnSectionInt[i//2]
+            print(f"# define column section {sec} for Story {i}&{i+1} for internal column",file=Element)
+            print(f"""	set Acol_int{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
+        set Icol_int{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
+        set Mycol_int{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+        set dcol_int{i}{i+1} {section[sec]["dcol"]};		# depth
+        set bfcol_int{i}{i+1} {section[sec]["bfcol"]};		# flange width
+        set tfcol_int{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
+        set twcol_int{i}{i+1} {section[sec]["twcol"]};		# web thickness
+        """,file=Element)
 
     for i in range(2,NStory+2,2):
         sec = beamSection[i//2-1]
@@ -630,8 +637,9 @@ def beamSprings(story,bay,Element):
         else:
             temp=floor-1
         print("""    set a_mem1 [expr ($n+1.0)*($Mybeam_{f1}{f2}*($McMy-1.0)) / ($Ks_beam_ext{f1}{f2}*$th_pP)];	# strain hardening ratio of spring
-    set b1 [expr ($a_mem1)/(1.0+$n*(1.0-$a_mem1))];								# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: there is mistake in Eqn B.5)
-    set a_mem2 [expr ($n+1.0)*($Mybeam_{f1}{f2}*($McMy-1.0)) / ($Ks_beam_int{f1}{f2}*$th_pP)];	# strain hardening ratio of spring
+    set b1 [expr ($a_mem1)/(1.0+$n*(1.0-$a_mem1))];								# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: there is mistake in Eqn B.5)""".format(f1=temp,f2=temp+1),file=Element)
+        if bay>1:
+            print("""    set a_mem2 [expr ($n+1.0)*($Mybeam_{f1}{f2}*($McMy-1.0)) / ($Ks_beam_int{f1}{f2}*$th_pP)];	# strain hardening ratio of spring
     set b2 [expr ($a_mem2)/(1.0+$n*(1.0-$a_mem2))];								# modified strain hardening ratio of spring (Ibarra & Krawinkler 2005, note: there is mistake in Eqn B.5)""".format(f1=temp,f2=temp+1),file=Element)
         print("",file=Element)
         print("    #beam springs at Floor {f}".format(f=floor),file=Element)

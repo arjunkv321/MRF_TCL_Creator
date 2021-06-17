@@ -5,7 +5,7 @@ f = open('Section.json')
 section = json.load(f)
 
 NStory = 8
-NBay = 3
+NBay = 1
 WBay = 20
 HStory1 = 15.09
 HStoryTyp = 13.12
@@ -21,8 +21,7 @@ with open('test.tcl','a') as Element:
 	defineBuildingGeometry(NStory,NBay,WBay,HStory1,HStoryTyp,Element)
 	locationsOfColumns(NBay,Element)
 	locationsOfBeams(NStory,Element)
-	panelZoneDimExt(NStory,columnSectionExt,section,Element)
-	panelZoneDimInt(NStory,columnSectionInt,section,Element)
+	panelZoneDim(NStory,NBay,columnSectionExt,columnSectionInt,section,Element)
 	panelZoneDimVert(NStory,beamSection,section,Element)
 	plasticHingeOffset(NStory,NBay,Element)
 	CalculateNodalMass(NBay,FloorWeight,Element)
@@ -33,9 +32,9 @@ with open('test.tcl','a') as Element:
 	nodalmasscreator(NStory,NBay,Element)
 	degreesOfFreedom(NStory,NBay,Element)
 	assignBoundaryCondidtions(NBay,Element)
-	defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection,section,Element)
-	IcolIbeamMod(NStory,Element)
-	Ks_col(NStory,Element)
+	defineBeamColumnSection(NStory,NBay,columnSectionExt,columnSectionInt,beamSection,section,Element)
+	IcolIbeamMod(NStory,NBay,Element)
+	Ks_col(NStory,NBay,Element)
 	Ks_beam(NStory,NBay,Element)
 	elasticColumnElement(NStory,NBay,Element)
 	elasticBeamColumnElements(NStory,NBay,Element)
