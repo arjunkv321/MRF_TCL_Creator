@@ -929,14 +929,23 @@ wipe all;""",file=Element)
 def SectionDetailsAdder(section,inputDetails):
     for sec in inputDetails:
         if sec not in section:
-            data={}
+            data = {}
+            inputs = {
+                "Acol" : "cross-sectional area",
+                "Icol" : "moment of inertia",
+                "My"    : "yield moment at plastic hinge location",
+                "dcol" : "depth",
+                "bfcol" : "flange width",
+                "tfcol" : "flange thickness",
+                "twcol" : "web thickness"
+            }
             print(sec," Details not in database \nPlease add following to Database")
-            for elements in section["W24x146"]:
-                data[elements]=float(input(str(elements)+" :"))
+            for elements in inputs:
+                data[elements]=float(input(str(inputs[elements])+" :"))
             print('## Entered Values Are ###')
             for i in data:
                 print(i," : ",data[i])
-            fix=(input("Enter yes to confirm the updation of database else enter no :"))
+            fix=(input("Enter yes to confirm the updation of database else enter no : "))
             fix.lower()
             while(True):
                 if fix=='yes':
@@ -947,9 +956,9 @@ def SectionDetailsAdder(section,inputDetails):
                     f.close()
                     break
                 elif fix=="no":
-                    print("Sorry Enter Once more :(")
+                    print("Sorry Enter Once more :( ")
                     break
                 else:
-                    fix=input("Wrong Command, Enter Yes or No")
+                    fix=input("Wrong Command, Enter Yes or No : ")
                     fix.lower()
             SectionDetailsAdder(section,inputDetails) 
