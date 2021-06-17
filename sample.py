@@ -1,3 +1,5 @@
+import json
+
 def elemPanelZone2DCreator(story,bay,Element):
     header="""\n# define elastic panel zone elements (assume rigid)
 	# elemPanelZone2D creates 8 elastic elements that form a rectangular panel zone
