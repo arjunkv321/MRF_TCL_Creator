@@ -53,3 +53,4 @@ with open('test.tcl','a') as Element:
 	Gravityanalysis(Element)
 	recorders(NStory,NBay,Element)
 	pushOver(NStory,NBay,lateralLoads,Element)
+	timeHistory(Element)

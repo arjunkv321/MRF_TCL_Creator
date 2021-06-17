@@ -45,7 +45,8 @@ def nodalmasscreator(story,bay,Element):
 
 def degreesOfFreedom(story,bay,Element):
     print("""# constrain beam-column joints in a floor to have the same lateral displacement using the "equalDOF" command
-	# command: equalDOF $MasterNodeID $SlaveNodeID $dof1 $dof2...""",file=Element)
+	# command: equalDOF $MasterNodeID $SlaveNodeID $dof1 $dof2...
+    set dof1 1;	# constrain movement in dof 1 (x-direction)""",file=Element)
     for floor in range(2,story+2):
         for pier in range(2,bay+3):
             if pier<=bay+1:
@@ -190,20 +191,20 @@ def defineColumnSprings(NStory,NBay,Element):
                     print("\n    # col springs @ bottom of Story {s} (at base)".format(s=NStory),file=Element)
                     for pier in range(1,NBay+2):
                         if pier == 1 or pier == NBay+1:
-                            print("    rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
-                            SpringArray.append("3"+str(pier)+str(NStory)+"2")
+                            print("    rotSpring2DModIKModel 3{p}{s}1 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="ext", cola=mycol, colb=mycol+1),file=Element)
+                            SpringArray.append("3"+str(pier)+str(NStory)+"1")
                         else:
-                            print("    rotSpring2DModIKModel 3{p}{s}2 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
-                            SpringArray.append("3"+str(pier)+str(NStory)+"2")
+                            print("    rotSpring2DModIKModel 3{p}{s}1 {p}{s}7 {p}{s}8 $Ks_col_{pos}{s} $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(s=NStory, f=NStory+1, p=str(pier), pos="int", cola=mycol, colb=mycol+1),file=Element)
+                            SpringArray.append("3"+str(pier)+str(NStory)+"1")
                     if NStory%2==1:
                         mycol+=2
                 else:
                     for pier in range(1,NBay+2):
                         if pier == 1 or pier == NBay+1:
-                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext"),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="ext",cola=mycol, colb=mycol+1),file=Element)
                             SpringArray.append("3"+str(pier)+"11")
                         else:
-                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos} [expr -$Mycol_{pos}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int"),file=Element)
+                            print("    rotSpring2DModIKModel 3{p}11 {p}1 {p}17 $Ks_col_{pos}1 $b{pos} $b{pos} $Mycol_{pos}{cola}{colb} [expr -$Mycol_{pos}{cola}{colb}] $LS $LK $LA $LD $cS $cK $cA $cD $th_pP $th_pN $th_pcP $th_pcN $ResP $ResN $th_uP $th_uN $DP $DN;".format(p=pier, pos="int",cola=mycol, colb=mycol+1),file=Element)
                             SpringArray.append("3"+str(pier)+"11")
             else:
                 print("\n    #col springs @ top of Story {s}".format(s=NStory),file=Element)
@@ -551,9 +552,9 @@ def defineBeamColumnSection(NStory,columnSectionExt,columnSectionInt,beamSection
         sec = beamSection[i//2-1]
         print(f"# define beam section {sec} for Floor {i}&{i+1}",file=Element)
         print(f"""    set Abeam_{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area (full section properties)
-	set Ibeam_{i}{i+2}  {section[sec]["Icol"]};	# moment of inertia  (full section properties)
-	set Mybeam_{i}{i+2} {section[sec]["Mybeam"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
-	set dbeam_{i}{i+2} {section[sec]["dcol"]};		# depth
+	set Ibeam_{i}{i+1}  {section[sec]["Icol"]};	# moment of inertia  (full section properties)
+	set Mybeam_{i}{i+1} {section[sec]["Mybeam"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set dbeam_{i}{i+1} {section[sec]["dcol"]};		# depth
     """,file=Element)
 
 def elasticBeamColumnElements(story,bay,Element):
@@ -844,3 +845,73 @@ if {$analysisType == "pushover"} {
 	set ok [analyze $Nsteps];			# this will return zero if no convergence problems were encountered
 	puts "Pushover complete";			# display this message in the command window
 }} 	""",file=Element)
+
+def timeHistory(Element):
+    print("""	
+############################################################################
+#   Time History/Dynamic Analysis               			   			   #
+############################################################################	
+if {$analysisType == "dynamic"} { 
+	puts "Running dynamic analysis..."
+		# display deformed shape:
+		set ViewScale 5;	# amplify display of deformed shape
+		DisplayModel2D DeformedShape $ViewScale;	# display deformed shape, the scaling factor needs to be adjusted for each model
+	
+	# Rayleigh Damping
+		# calculate damping parameters
+		set zeta 0.02;		# percentage of critical damping
+		set a0 [expr $zeta*2.0*$w1*$w2/($w1 + $w2)];	# mass damping coefficient based on first and second modes
+		set a1 [expr $zeta*2.0/($w1 + $w2)];			# stiffness damping coefficient based on first and second modes
+		set a1_mod [expr $a1*(1.0+$n)/$n];				# modified stiffness damping coefficient used for n modified elements. See Zareian & Medina 2010.
+		
+		# assign damping to frame beams and columns		
+		# command: region $regionID -eleRange $elementIDfirst $elementIDlast rayleigh $alpha_mass $alpha_currentStiff $alpha_initialStiff $alpha_committedStiff
+		region 4 -eleRange 111 239 rayleigh 0.0 0.0 $a1_mod 0.0;	# assign stiffness proportional damping to frame beams & columns w/ n modifications
+		region 5 -eleRange 2121 2392 rayleigh 0.0 0.0 $a1 0.0;		# assign stiffness proportional damping to frame beams & columns w/out n modifications
+		#region 6 -eleRange 500000 599999 rayleigh 0.0 0.0 $a1 0.0;	# assign stiffness proportional damping to panel zone elements
+		rayleigh $a0 0.0 0.0 0.0;              						# assign mass proportional damping to structure (only assigns to nodes with mass)
+		
+	# define ground motion parameters
+		set patternID 1;				# load pattern ID
+		set GMdirection 1;				# ground motion direction (1 = x)
+		set GMfile "NR94cnp.tcl";		# ground motion filename
+		set dt 0.01;					# timestep of input GM file
+		set Scalefact 1.0;				# ground motion scaling factor
+		set TotalNumberOfSteps 2495;	# number of steps in ground motion
+		set GMtime [expr $dt*$TotalNumberOfSteps + 10.0];	# total time of ground motion + 10 sec of free vibration
+		
+	# define the acceleration series for the ground motion
+		# syntax:  "Series -dt $timestep_of_record -filePath $filename_with_acc_history -factor $scale_record_by_this_amount
+		set accelSeries "Series -dt $dt -filePath $GMfile -factor [expr $Scalefact*$g]";
+		
+	# create load pattern: apply acceleration to all fixed nodes with UniformExcitation
+		# command: pattern UniformExcitation $patternID $GMdir -accel $timeSeriesID 
+		pattern UniformExcitation $patternID $GMdirection -accel $accelSeries;
+		
+	# define dynamic analysis parameters
+		set dt_analysis 0.001;			# timestep of analysis
+		wipeAnalysis;					# destroy all components of the Analysis object, i.e. any objects created with system, numberer, constraints, integrator, algorithm, and analysis commands
+		constraints Plain;				# how it handles boundary conditions
+		numberer RCM;					# renumber dof's to minimize band-width (optimization)
+		system UmfPack;					# how to store and solve the system of equations in the analysis
+		test NormDispIncr 1.0e-8 10;	# type of convergence criteria with tolerance, max iterations
+		algorithm Newton;				# use Newton's solution algorithm: updates tangent stiffness at every iteration
+		integrator Newmark 0.5 0.25;	# uses Newmark's average acceleration method to compute the time history
+		analysis Transient;				# type of analysis: transient or static
+		set NumSteps [expr round(($GMtime + 0.0)/$dt_analysis)];	# number of steps in analysis
+		
+	# perform the dynamic analysis and display whether analysis was successful	
+		set ok [analyze $NumSteps $dt_analysis];	# ok = 0 if analysis was completed
+		if {$ok == 0} {
+			puts "Dynamic analysis complete";
+		} else {
+			puts "Dynamic analysis did not converge";
+		}		
+		
+	# output time at end of analysis	
+		set currentTime [getTime];	# get current analysis time	(after dynamic analysis)
+		puts "The current time is: $currentTime";
+		wipe all;
+}
+	
+wipe all;""",file=Element)
