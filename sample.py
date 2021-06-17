@@ -47,14 +47,14 @@ def degreesOfFreedom(story,bay,Element):
     print("""# constrain beam-column joints in a floor to have the same lateral displacement using the "equalDOF" command
 	# command: equalDOF $MasterNodeID $SlaveNodeID $dof1 $dof2...""",file=Element)
     for floor in range(2,story+2):
-            for pier in range(2,bay+3):
-                if pier<=bay+1:
-                    dof="    equalDOF 1{f}05 {p}205 $dof1;		# Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
-                    print(dof,file=Element)
-                else:
-                    dof="    equalDOF 1{f}05 {p}{f} $dof1;		    # Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
-                    print(dof,file=Element)
-            print("",file=Element)
+        for pier in range(2,bay+3):
+            if pier<=bay+1:
+                dof="    equalDOF 1{f}05 {p}{f}05 $dof1;		# Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
+                print(dof,file=Element)
+            else:
+                dof="    equalDOF 1{f}05 {p}{f} $dof1;		    # Floor {f}:  Pier 1 to Pier {p}".format(p=pier,f=floor)
+                print(dof,file=Element)
+        print("",file=Element)
 
 def assignBoundaryCondidtions(bay,Element):
     print("""# assign boundary condidtions 
@@ -135,21 +135,22 @@ def panelZoneDimVert(NStory,beamSection,section,Element):
         print("   ",pzvert,file=Element)
     print("",file=Element)
 
-def plasticHingeOffset(NStory,Element):
+def plasticHingeOffset(NStory,NBay,Element):
     header="""# calculate plastic hinge offsets from beam-column centerlines:
     # lateral dist from CL of beam-col joint to beam hinge, xy x=floor y=nextfloor, ext=external,int=internal"""
     print(header,file=Element)
     for i in range(2,NStory+1,2):
-        phlat = "set phlatint{f1}{f2} [expr $pzlatent{f1}{f2}  + 7.5 + 22.5/2.0];".format(
+        phlat = "set phlatext{f1}{f2} [expr $pzlatext{f1}{f2}  + 7.5 + 22.5/2.0];".format(
             f1=i, f2=i+1
         )
         print("   ",phlat,file=Element)
     print("\n",end="")
-    for i in range(2,NStory+1,2):
-        phlat = "set phlatint{f1}{f2} [expr $pzlatent{f1}{f2}  + 7.5 + 22.5/2.0];".format(
-            f1=i, f2=i+1
-        )
-        print("   ",phlat,file=Element)
+    if NBay>2:
+        for i in range(2,NStory+1,2):
+            phlat = "set phlatint{f1}{f2} [expr $pzlatint{f1}{f2}  + 7.5 + 22.5/2.0];".format(
+                f1=i, f2=i+1
+            )
+            print("   ",phlat,file=Element)
 
     header="""
 # vert dist from CL of beam-col joint to column hinge (forms at edge of panel zone)"""
@@ -170,7 +171,7 @@ def defineNodes(NStory,NBays,Element):
         node = "node {b}1 $Pier{b} $Floor1;".format(b=i)
         print("   ",node,file=Element)
     for i in range(2,NStory+2):
-        node = "node 5{s} $Pier5 $Floor{s};".format(s=i)
+        node = f"node {NBays+2}{i} $Pier{NBays+2} $Floor{i};"
         print("   ",node,file=Element)
 
 def defineColumnSprings(NStory,NBay,Element):
@@ -296,7 +297,7 @@ def ColumnHingeNodes(NStory,NBay,Element):
                     if NStory%2==1:
                         print("    # column hinges at mid of story {s}".format(s=NStory),file=Element)
                         for pier in range(1,NBay+2):
-                            print(("    node {p}{s}0 $Pier1 [expr $Floor{s} + $phvert{v1}{v2} + 0.5*$HNStoryTyp];	#xy0, x=pier y=floor").format(p=pier,s=NStory,v1=vert,v2=vert+1),file=Element)
+                            print(("    node {p}{s}0 $Pier{p} [expr $Floor{s} + $phvert{v1}{v2} + 0.5*$HStoryTyp];	#xy0, x=pier y=floor").format(p=pier,s=NStory,v1=vert,v2=vert+1),file=Element)
                         vert+=2
                 else:
                     print( "    # column hinges at bottom of story 1 (base)",file=Element)
