@@ -1,5 +1,5 @@
 # Created by: Arjun KV, Mohammed Salih C T, Afsal T K, Anandhu VG, National Institute of Technology Calicut
-from sample import *
+from source import *
 import json
 
 f = open('Section.json')
@@ -16,8 +16,9 @@ beamSection = ["W27x94","W24x94","W24x76","W18x50"] # 2 succesive floors  have s
 FloorWeight = 586.25	#in kips
 floorLength = 140.1		#in foots
 floorWidth = 100.07		#in foots
-lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]		# in kips
+lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14,59,67,79,88,95,104,116,125,130,145,155,167]		# in kips
 
+lateralLoadCheck(NStory,lateralLoads,"lateralLoads")
 lengthChecker(NStory,columnSectionExt,"columnSectionExt")
 lengthChecker(NStory,columnSectionInt,"columnSectionInt")
 lengthChecker(NStory,beamSection,"beamSection")
@@ -62,3 +63,4 @@ with open(f'MRF_{NStory}S_{NBay}B_Structure.tcl','a') as Element:
 	recorders(NStory,NBay,Element)
 	pushOver(NStory,NBay,lateralLoads,Element)
 	timeHistory(Element)
+	print(NStory,"story",NBay,"bay MRF tcl file is successfully created ")

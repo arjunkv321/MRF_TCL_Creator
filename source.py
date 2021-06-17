@@ -271,7 +271,7 @@ def Ks_beam(NStory,Nbays,Element):
     if Nbays>1:
         for i in range(2,NStory+1,2):
             ksb="""set Ks_beam_int{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs of external column
-        set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
+    set Ks_beam_ext{f1}{f2} [expr $n*6.0*$Es*$Ibeam_{f1}{f2}mod/($WBay-$phlatext{f1}{f2}-$phlatint{f1}{f2})];		# rotational stiffness of Floor {f1},{f2} & beam springs internal column""".format(
                 f1=i, f2=i+1
             )
             print("   ",ksb,file=Element)
@@ -534,7 +534,7 @@ def defineBeamColumnSection(NStory,NBay,columnSectionExt,columnSectionInt,beamSe
         print(f"# define column section {sec} for Story {i}&{i+1} for external column",file=Element)
         print(f"""	set Acol_ext{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
 	set Icol_ext{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
-	set Mycol_ext{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set Mycol_ext{i}{i+1} {section[sec]["My"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
 	set dcol_ext{i}{i+1} {section[sec]["dcol"]};		# depth
 	set bfcol_ext{i}{i+1} {section[sec]["bfcol"]};		# flange width
 	set tfcol_ext{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
@@ -546,20 +546,20 @@ def defineBeamColumnSection(NStory,NBay,columnSectionExt,columnSectionInt,beamSe
             sec = columnSectionInt[i//2]
             print(f"# define column section {sec} for Story {i}&{i+1} for internal column",file=Element)
             print(f"""	set Acol_int{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area
-        set Icol_int{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
-        set Mycol_int{i}{i+1} {section[sec]["Mycol"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
-        set dcol_int{i}{i+1} {section[sec]["dcol"]};		# depth
-        set bfcol_int{i}{i+1} {section[sec]["bfcol"]};		# flange width
-        set tfcol_int{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
-        set twcol_int{i}{i+1} {section[sec]["twcol"]};		# web thickness
-        """,file=Element)
+    set Icol_int{i}{i+1}  {section[sec]["Icol"]};		# moment of inertia
+    set Mycol_int{i}{i+1} {section[sec]["My"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+    set dcol_int{i}{i+1} {section[sec]["dcol"]};		# depth
+    set bfcol_int{i}{i+1} {section[sec]["bfcol"]};		# flange width
+    set tfcol_int{i}{i+1} {section[sec]["tfcol"]};		# flange thickness
+    set twcol_int{i}{i+1} {section[sec]["twcol"]};		# web thickness
+    """,file=Element)
 
     for i in range(2,NStory+2,2):
         sec = beamSection[i//2-1]
         print(f"# define beam section {sec} for Floor {i}&{i+1}",file=Element)
         print(f"""    set Abeam_{i}{i+1}  {section[sec]["Acol"]};		# cross-sectional area (full section properties)
 	set Ibeam_{i}{i+1}  {section[sec]["Icol"]};	# moment of inertia  (full section properties)
-	set Mybeam_{i}{i+1} {section[sec]["Mybeam"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
+	set Mybeam_{i}{i+1} {section[sec]["My"]};	# yield moment at plastic hinge location (i.e., My of RBS section)
 	set dbeam_{i}{i+1} {section[sec]["dcol"]};		# depth
     """,file=Element)
 
@@ -740,7 +740,7 @@ def GravityLoadLeaningColumn(NStory,NBay,WBay,FloorWeight,floorLength,floorWidth
         print(f"        set P_PD{floor} [expr -{grvtyLoad}];	# Floor {floor}",file=Element)
     print("",file=Element)
     for floor in range(2,NStory+2):
-        print(f"        load 5{floor} 0.0 $P_PD{floor} 0.0;		# Floor {floor}",file=Element)
+        print(f"        load {NBay+2}{floor} 0.0 $P_PD{floor} 0.0;		# Floor {floor}",file=Element)
 
 def pointLoadonFrame(NStory,NBay,Element):
     print("\n        # point loads on frame column nodes",file=Element)
@@ -970,4 +970,9 @@ def lengthChecker(NStory,array,arrayName):
 		exit()
 	if (len(array) < NStory/2):
 		print(arrayName," must contain ",NStory//2," elements")
+		exit()
+
+def lateralLoadCheck(NStory,array,arrayName):
+	if (len(array) < NStory):
+		print(arrayName," must contain ",NStory," elements")
 		exit()

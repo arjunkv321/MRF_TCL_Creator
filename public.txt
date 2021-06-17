@@ -1,0 +1,10 @@
+For 8 story:
+columnSectionExt = ["W24x146","W24x131","W24x94","W24x76"] # 2 succesive colunms have same section
+columnSectionInt = ["W24x162","W24x162","W24x131","W24x76"] # 2 succesive colunms have same section
+beamSection = ["W27x94","W24x94","W24x76","W18x50"] # 2 succesive floors  have same beam section
+lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]
+
+For 16 story:
+columnSectionExt = ["W36x395","W36x330","W36x282","W24x229","W24x162","W24x131","W24x94","W24x76"] # 2 succesive colunms have same section
+columnSectionInt = ["W24x207","W24x207","W24x207","W24x176","W24x162","W24x146","W24x131","W24x76"] # 2 succesive colunms have same section
+beamSection = ["W30x108","W30x108","W30x108","W27x102","W27x94","W24x94","W24x76","W18x50"] # 2 succesive floors  have same beam section
