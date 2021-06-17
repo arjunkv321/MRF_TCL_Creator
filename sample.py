@@ -571,7 +571,7 @@ def elasticBeamColumnElements(story,bay,Element):
         print("    # Beams story{s} or floor {f}".format(f=floor,s=floor-1),file=Element)
         for pier in range(1,bay+1):
             elasticBeamElement="""    element elasticBeamColumn  2{p}{f}1 {p}{f}05 {p}{f}1  $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}    $PDeltaTransf;
-    elasticBeamColumn          2{p}{f}  {p}{f}2  {p1}{f}3  $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}mod $PDeltaTransf;
+    element elasticBeamColumn  2{p}{f}  {p}{f}2  {p1}{f}3  $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}mod $PDeltaTransf;
     element elasticBeamColumn  2{p}{f}2 {p1}{f}4  {p1}{f}10 $Abeam_{f1}{f2} $Es $Ibeam_{f1}{f2}    $PDeltaTransf;""".format(p=pier,f=floor,s=floor-1,p1=pier+1,f1=temp,f2=temp+1)
             print(elasticBeamElement,file=Element)
             print("",file=Element)
