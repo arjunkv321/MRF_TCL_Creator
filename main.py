@@ -1,3 +1,4 @@
+# Created by: Arjun KV, Mohammed Salih C T, Afsal T K, Anandhu VG, National Institute of Technology Calicut
 from sample import *
 import json
 
@@ -17,12 +18,15 @@ floorLength = 140.1		#in foots
 floorWidth = 100.07		#in foots
 lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]		# in kips
 
+lengthChecker(NStory,columnSectionExt,"columnSectionExt")
+lengthChecker(NStory,columnSectionInt,"columnSectionInt")
+lengthChecker(NStory,beamSection,"beamSection")
+SectionDetailsAdder(section,columnSectionExt)
+SectionDetailsAdder(section,columnSectionInt)
+SectionDetailsAdder(section,beamSection)
 with open(f'MRF_{NStory}S_{NBay}B_Structure.tcl','w') as Element:
 	fileDetails(NStory,NBay,Element)
 with open(f'MRF_{NStory}S_{NBay}B_Structure.tcl','a') as Element:
-	SectionDetailsAdder(section,columnSectionExt)
-	SectionDetailsAdder(section,columnSectionInt)
-	SectionDetailsAdder(section,beamSection)
 	defineBuildingGeometry(NStory,NBay,WBay,HStory1,HStoryTyp,Element)
 	locationsOfColumns(NBay,Element)
 	locationsOfBeams(NStory,Element)

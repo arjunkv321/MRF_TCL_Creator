@@ -464,7 +464,8 @@ def fileDetails(NStory,NBay,Element):
     print(("""# --------------------------------------------------------------------------------------------------
 # Example: {s}-Story {b}-Bay Steel Moment Frame with Concentrated Plasticity
 # Panel Zone Model with Concentrated Plastic Hinges at RBS Locations
-# Created by:  Laura Eads, Stanford University, 2010
+# Recreated by: Arjun KV, Mohammed Salih C T, Afsal T K, Anandhu VG, National Institute of Technology Calicut
+# Reference:  Laura Eads, Stanford University, 2010
 # Units: kips, inches, seconds
 
 # Element ID conventions:
@@ -962,3 +963,11 @@ def SectionDetailsAdder(section,inputDetails):
                     fix=input("Wrong Command, Enter Yes or No : ")
                     fix.lower()
             SectionDetailsAdder(section,inputDetails) 
+
+def lengthChecker(NStory,array,arrayName):
+	if NStory%2!=0:
+		print("Number of story mast be even number")
+		exit()
+	if (len(array) < NStory/2):
+		print(arrayName," must contain ",NStory//2," elements")
+		exit()
