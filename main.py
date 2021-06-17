@@ -6,14 +6,16 @@ section = json.load(f)
 
 NStory = 8
 NBay = 1
-WBay = 20
-HStory1 = 15.09
-HStoryTyp = 13.12
+WBay = 20			#in foots
+HStory1 = 15.09		#in foots
+HStoryTyp = 13.12	#in foots
 columnSectionExt = ["W24x146","W24x131","W24x94","W24x76"] # 2 succesive colunms have same section
 columnSectionInt = ["W24x162","W24x162","W24x131","W24x76"] # 2 succesive colunms have same section
 beamSection = ["W27x94","W24x94","W24x76","W18x50"] # 2 succesive floors  have same beam section
-FloorWeight=586.25
-lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]
+FloorWeight = 586.25	#in kips
+floorLength = 140.1		#in foots
+floorWidth = 100.07		#in foots
+lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]		# in kips
 
 with open('test.tcl','w') as Element:
 	fileDetails(NStory,NBay,Element)
@@ -47,7 +49,7 @@ with open('test.tcl','a') as Element:
 	definePanelZoneSpring(NStory,NBay,Element)
 	pDeltaSprings(NStory,NBay,Element)
 	eigenValue(Element)
-	GravityLoadLeaningColumn(NStory,Element)
+	GravityLoadLeaningColumn(NStory,NBay,WBay,FloorWeight,floorLength,floorWidth,Element)
 	pointLoadonFrame(NStory,NBay,Element)
 	Gravityanalysis(Element)
 	recorders(NStory,NBay,Element)

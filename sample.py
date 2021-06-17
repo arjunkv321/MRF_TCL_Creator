@@ -1,7 +1,3 @@
-
-from workspace import NBay
-
-
 def elemPanelZone2DCreator(story,bay,Element):
     header="""\n# define elastic panel zone elements (assume rigid)
 	# elemPanelZone2D creates 8 elastic elements that form a rectangular panel zone
@@ -724,7 +720,7 @@ def eigenValue(Element):
 	puts "T2 = $T2 s";									# display the second mode period in the command window
 """,file=Element)
 
-def GravityLoadLeaningColumn(NStory,Element):
+def GravityLoadLeaningColumn(NStory,NBay,WBay,FloorWeight,floorLength,floorWidth,Element):
     print("""\n############################################################################
 #              Gravity Loads & Gravity Analysis
 ############################################################################
@@ -734,8 +730,11 @@ def GravityLoadLeaningColumn(NStory,Element):
             
         # point loads on leaning column nodes
         # command: load node Fx Fy Mz\n""",file=Element)
+    flrWtprsqrins=(FloorWeight*2)/(floorLength*floorWidth*12*12)
+    loadpier=flrWtprsqrins*WBay*WBay*12*12*0.5*(NBay+1)
+    grvtyLoad=round((FloorWeight-loadpier),2)
     for floor in range(2,NStory+2):
-        print(f"        set P_PD{floor} [expr -519.32];	# Floor {floor}",file=Element)
+        print(f"        set P_PD{floor} [expr -{grvtyLoad}];	# Floor {floor}",file=Element)
     print("",file=Element)
     for floor in range(2,NStory+2):
         print(f"        load 5{floor} 0.0 $P_PD{floor} 0.0;		# Floor {floor}",file=Element)
