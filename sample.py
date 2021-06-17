@@ -581,8 +581,8 @@ def pdeltaElasticColumn(NStory,NBay,Element):
     #eleID convention:  7xy, 7 = p-delta columns, x = Pier #, y = Story #"""
     print(header,file=Element)
     print(f"    element elasticBeamColumn  7{NBay+2}1  {NBay+2}1	{NBay+2}26 $Arigid $Es $Irigid $PDeltaTransf;	# Story 1",file=Element)
-    for story in range(2,NStory+1):
-        print(f"    element elasticBeamColumn  7{NBay+2}{story}  {NBay+2}17	{NBay+2}26 $Arigid $Es $Irigid $PDeltaTransf;	# Story {story}",file=Element)
+    for floor in range(2,NStory+1):
+        print(f"    element elasticBeamColumn  7{NBay+2}{floor}  {NBay+2}{floor}7	{NBay+2}{floor+1}6 $Arigid $Es $Irigid $PDeltaTransf;	# Story {floor}",file=Element)
 
 def DefineProps(Element):
     print("""\n###################################################################################################
