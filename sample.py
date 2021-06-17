@@ -798,3 +798,49 @@ def recorders(NStory,NBay,Element):
     recorder Element -file $dataDir/MRFbeam-Rot-Hist.out -time -region 2 deformation;
 
     """,file=Element)
+
+def pushOver(NStory,NBay,lateralLoad,Element):
+	print("""
+#######################################################################################
+#                                                                                     #
+#                              Analysis Section			                              #
+#                                                                                     #
+#######################################################################################
+
+############################################################################
+#              Pushover Analysis                			   			   #
+############################################################################
+if {$analysisType == "pushover"} { 
+	puts "Running Pushover..."
+# assign lateral loads and create load pattern:  use ASCE 7-10 distribution """,file=Element)
+	for floor in range(2,NStory+2):
+		print(f"	set lat{floor} {lateralLoad[floor-2]};	# force on each beam-column joint in Floor {floor}",file=Element)
+	print("",file=Element)
+	print("	pattern Plain 200 Linear {",file=Element)
+	for floor in range(2,NStory+2):
+		for pier in range(1,NBay+2):
+			print(f"					load {pier}{floor}05 $lat{floor} 0.0 0.0;",file=Element)
+		print("",file=Element)
+	print("	}",file=Element)
+	print(f"""# display deformed shape:
+	set ViewScale 5;
+	DisplayModel2D DeformedShape $ViewScale ;	# display deformed shape, the scaling factor needs to be adjusted for each model
+
+# displacement parameters
+	set IDctrlNode 1{NStory+1}05;				# node where disp is read for disp control ///////// changed to 1305 to 1405
+	set IDctrlDOF 1;					# degree of freedom read for disp control (1 = x displacement)
+	set Dmax [expr 0.1*$HBuilding];		# maximum displacement of pushover: 10% roof drift
+	set Dincr [expr 0.01];				# displacement increment
+
+# analysis commands
+	constraints Plain;					# how it handles boundary conditions
+	numberer RCM;						# renumber dof's to minimize band-width (optimization)
+	system BandGeneral;					# how to store and solve the system of equations in the analysis (large model: try UmfPack)
+	test NormUnbalance 1.0e-5 400;		# type of convergence criteria with tolerance, max iterations
+	algorithm Newton;					# use Newton's solution algorithm: updates tangent stiffness at every iteration
+	integrator DisplacementControl  $IDctrlNode   $IDctrlDOF $Dincr;	# use displacement-controlled analysis
+	analysis Static;					# define type of analysis: static for pushover
+	set Nsteps [expr int($Dmax/$Dincr)];# number of pushover analysis steps
+	set ok [analyze $Nsteps];			# this will return zero if no convergence problems were encountered
+	puts "Pushover complete";			# display this message in the command window
+}} 	""",file=Element)
