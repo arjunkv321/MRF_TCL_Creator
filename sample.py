@@ -760,3 +760,41 @@ def Gravityanalysis(Element):
 	puts "Model Built"
 """,file=Element)
 
+def recorders(NStory,NBay,Element):
+    print("""############################################################################
+#              Recorders					                			   
+############################################################################
+# record drift histories
+    # record drifts
+    recorder Drift -file $dataDir/Drift-Story1.out -time -iNode 11 -jNode 1205 -dof 1 -perpDirn 2;""",file=Element)
+    for floor in range(2,NStory+2):
+        if floor<NStory+1:
+            print(f"    recorder Drift -file $dataDir/Drift-Story{floor}.out -time -iNode 1{floor}05 -jNode 1{floor+1}05 -dof 1 -perpDirn 2;",file=Element)
+        else:
+            print(f"    recorder Drift -file $dataDir/Drift-Roof.out -time -iNode 11 -jNode 1{floor}05 -dof 1 -perpDirn 2;",file=Element)
+    print(f"""\n# record floor displacements	
+    recorder Node -file $dataDir/Disp.out -time -node""",end=" ",file=Element)
+    for floor in range(2,NStory+1):
+        print(f"1{floor}05",end=" ",file=Element)
+    print(f"1{NStory+1}05 -dof 1 disp; ",file=Element)
+    print("""\n# record base shear reactions
+    recorder Node -file $dataDir/Vbase.out -time -node""",end=" ",file=Element)
+    for pier in range(1,NBay+2):
+        print(f"{pier}17",end=" ",file=Element)
+    print(f"{NBay+2}1 -dof 1 reaction;",file=Element)
+
+    print("\n# record story 1 column forces in global coordinates ",file=Element)
+    for pier in range(1,NBay+2):
+        print(f"    recorder Element -file $dataDir/Fcol1{pier}1.out -time -ele 1{pier}1 force;",file=Element)
+    print(f"    recorder Element -file $dataDir/Fcol7{NBay+2}1.out -time -ele 1{NBay+2}1 force;",file=Element)
+
+    print("""	
+# record response history of all frame column springs (one file for moment, one for rotation)
+    recorder Element -file $dataDir/MRFcol-Mom-Hist.out -time -region 1 force;
+    recorder Element -file $dataDir/MRFcol-Rot-Hist.out -time -region 1 deformation;
+        
+# record response history of all frame beam springs (one file for moment, one for rotation)
+    recorder Element -file $dataDir/MRFbeam-Mom-Hist.out -time -region 2 force;
+    recorder Element -file $dataDir/MRFbeam-Rot-Hist.out -time -region 2 deformation;
+
+    """,file=Element)

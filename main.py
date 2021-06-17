@@ -51,3 +51,4 @@ with open('test.tcl','a') as Element:
 	GravityLoadLeaningColumn(NStory,Element)
 	pointLoadonFrame(NStory,NBay,Element)
 	Gravityanalysis(Element)
+	recorders(NStory,NBay,Element)
