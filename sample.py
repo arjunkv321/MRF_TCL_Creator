@@ -922,3 +922,32 @@ if {$analysisType == "dynamic"} {
 }
 	
 wipe all;""",file=Element)
+
+
+def SectionDetailsAdder(section,inputDetails):
+    for sec in inputDetails:
+        if sec not in section:
+            data={}
+            print(sec," Details not in database \nPlease add following to Database")
+            for elements in section["W24x146"]:
+                data[elements]=float(input(str(elements)+" :"))
+            print('## Entered Values Are ###')
+            for i in data:
+                print(i," : ",data[i])
+            fix=(input("Enter yes to confirm the updation of database else enter no :"))
+            fix.lower()
+            while(True):
+                if fix=='yes':
+                    f = open('Section.json','w')
+                    section[sec]=data
+                    json.dump(section,f)
+                    print("Database is Updated :) ")
+                    f.close()
+                    break
+                elif fix=="no":
+                    print("Sorry Enter Once more :(")
+                    break
+                else:
+                    fix=input("Wrong Command, Enter Yes or No")
+                    fix.lower()
+            SectionDetailsAdder(section,inputDetails) 

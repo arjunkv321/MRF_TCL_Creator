@@ -5,7 +5,7 @@ f = open('Section.json')
 section = json.load(f)
 
 NStory = 8
-NBay = 1
+NBay = 3
 WBay = 20			#in foots
 HStory1 = 15.09		#in foots
 HStoryTyp = 13.12	#in foots
@@ -17,9 +17,12 @@ floorLength = 140.1		#in foots
 floorWidth = 100.07		#in foots
 lateralLoads = [3.72,8.599,14.33,20.73,27.67,35.09,42.92,51.14]		# in kips
 
-with open('test.tcl','w') as Element:
+with open(f'MRF_{NStory}S_{NBay}B_Structure.tcl','w') as Element:
 	fileDetails(NStory,NBay,Element)
-with open('test.tcl','a') as Element:
+with open(f'MRF_{NStory}S_{NBay}B_Structure.tcl','a') as Element:
+	SectionDetailsAdder(section,columnSectionExt)
+	SectionDetailsAdder(section,columnSectionInt)
+	SectionDetailsAdder(section,beamSection)
 	defineBuildingGeometry(NStory,NBay,WBay,HStory1,HStoryTyp,Element)
 	locationsOfColumns(NBay,Element)
 	locationsOfBeams(NStory,Element)
