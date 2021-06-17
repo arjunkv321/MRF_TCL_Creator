@@ -46,3 +46,7 @@ with open('test.tcl','a') as Element:
 	beamSprings(NStory,NBay,Element)
 	definePanelZoneSpring(NStory,NBay,Element)
 	pDeltaSprings(NStory,NBay,Element)
+	eigenValue(Element)
+	GravityLoadLeaningColumn(NStory,Element)
+	pointLoadonFrame(NStory,NBay,Element)
+	Gravityanalysis(Element)

@@ -695,3 +695,67 @@ def definePanelZoneSpring(Nstory,Nbay,Element):
 			else:
 				print(f"	rotPanelZone2D 4{pier}{floor}00 {pier}{floor}03 {pier}{floor}04 $Es $Fy $dcol_int{s}{s+1} $bfcol_int{s}{s+1} $tfcol_int{s}{s+1} $twcol_int{s}{s+1} $dbeam_{s+1}{s+2} $Ry $as_PZ;",file=Element)
 		print("",file=Element)
+
+def eigenValue(Element):
+    print("""\n############################################################################
+#                       Eigenvalue Analysis                    			   
+############################################################################
+	set pi [expr 2.0*asin(1.0)];						# Definition of pi
+	set nEigenI 1;										# mode i = 1
+	set nEigenJ 2;										# mode j = 2
+	set lambdaN [eigen [expr $nEigenJ]];				# eigenvalue analysis for nEigenJ modes
+	set lambdaI [lindex $lambdaN [expr $nEigenI-1]];	# eigenvalue mode i = 1
+	set lambdaJ [lindex $lambdaN [expr $nEigenJ-1]];	# eigenvalue mode j = 2
+	set w1 [expr pow($lambdaI,0.5)];					# w1 (1st mode circular frequency)
+	set w2 [expr pow($lambdaJ,0.5)];					# w2 (2nd mode circular frequency)
+	set T1 [expr 2.0*$pi/$w1];							# 1st mode period of the structure
+	set T2 [expr 2.0*$pi/$w2];							# 2nd mode period of the structure
+	puts "T1 = $T1 s";									# display the first mode period in the command window
+	puts "T2 = $T2 s";									# display the second mode period in the command window
+""",file=Element)
+
+def GravityLoadLeaningColumn(NStory,Element):
+    print("""\n############################################################################
+#              Gravity Loads & Gravity Analysis
+############################################################################
+# apply gravity loads
+    #command: pattern PatternType $PatternID TimeSeriesType
+    pattern Plain 101 Constant {
+            
+        # point loads on leaning column nodes
+        # command: load node Fx Fy Mz\n""",file=Element)
+    for floor in range(2,NStory+2):
+        print(f"        set P_PD{floor} [expr -519.32];	# Floor {floor}",file=Element)
+    print("",file=Element)
+    for floor in range(2,NStory+2):
+        print(f"        load 5{floor} 0.0 $P_PD{floor} 0.0;		# Floor {floor}",file=Element)
+
+def pointLoadonFrame(NStory,NBay,Element):
+    print("\n        # point loads on frame column nodes",file=Element)
+    for floor in range(2,NStory+2):
+        print(f"        set P_F{floor} [expr 0.25*(-1.0*$FloorWeight-$P_PD{floor})];	# load on each frame node in Floor {floor}",file=Element)
+    for floor in range(2,NStory+2):
+        print(f"\n        # Floor {floor} loads",file=Element)
+        for pier in range(1,NBay+2):
+            print(f"        load {pier}{floor}7 0.0 $P_F{floor} 0.0;",file=Element)
+    print("}",file=Element)
+
+def Gravityanalysis(Element):
+    print("""# Gravity-analysis: load-controlled static analysis	
+    set Tol 1.0e-6;							# convergence tolerance for test
+	constraints Plain;						# how it handles boundary conditions
+	numberer RCM;							# renumber dof's to minimize band-width (optimization)
+	system BandGeneral;						# how to store and solve the system of equations in the analysis (large model: try UmfPack)
+	test NormDispIncr $Tol 6;				# determine if convergence has been achieved at the end of an iteration step
+	algorithm Newton;						# use Newton's solution algorithm: updates tangent stiffness at every iteration
+	set NstepGravity 10;					# apply gravity in 10 steps
+	set DGravity [expr 1.0/$NstepGravity];	# load increment
+	integrator LoadControl $DGravity;		# determine the next time step for an analysis
+	analysis Static;						# define type of analysis: static or transient
+	analyze $NstepGravity;					# apply gravity
+
+	# maintain constant gravity loads and reset time to zero
+	loadConst -time 0.0
+	puts "Model Built"
+""",file=Element)
+
